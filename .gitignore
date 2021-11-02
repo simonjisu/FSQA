@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+setting_files/settings.yml
+docs_cache
+Notebook/docs_cache
