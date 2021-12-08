@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+   xmlns:acc="http://fsqa.com/acc#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+   xmlns:time="http://www.w3.org/2006/time#"
+>
+  <rdf:Description rdf:about="http://fsqa.com/acc#OperatingIncome">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#ProfitBeforeTax"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">영업이익</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#Profit">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">당기순이익(손실)</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#ProfitRatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#GrossProfit">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#OperatingIncome"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출총이익</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#ShorttermBorrowings">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentLiabilities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">단기차입금</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#TradePayablesTurnoverPeriod">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매입채무 회전기간</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CostOfSalesRatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출원가율</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#SalesAndSG&amp;ARatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#LiabilitiesAndEquities">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">부채와자본총계</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#SG&amp;ARatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">판관비율</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#SalesAndSG&amp;ARatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#PrepaidExpenses">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">선급비용</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#PrepaidExpensesTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CalendarOneYear">
+    <rdf:type rdf:resource="http://www.w3.org/2006/time#DateTimeDescription"/>
+    <time:hasDuration rdf:resource="http://www.w3.org/2006/time#day"/>
+    <time:Duration rdf:datatype="http://www.w3.org/2001/XMLSchema#string">365</time:Duration>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#TradeReceivableTurnoverPeriod"/>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#PrepaidExpensesTurnoverPeriod"/>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#InventoriesTurnoverPeriod"/>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#TradePayablesTurnoverPeriod"/>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#AdvancesCustomersTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#Revenue">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#GrossProfit"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">수익(매출액)</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#TradeReceivableTurnoverPeriod"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#PrepaidExpensesTurnoverPeriod"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#InventoriesTurnoverPeriod"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#TradePayablesTurnoverPeriod"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#AdvancesCustomersTurnoverPeriod"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#CostOfSalesRatio"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#SG&amp;ARatio"/>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#ProfitRatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#FinancialExpenses">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#ProfitBeforeTax"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">금융비용</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Negative</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#ProfitRatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">순이익율</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#TradeAndOtherCurrentReceivables">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출채권</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#TradeReceivableTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#PropertyPlantAndEquipment">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#NoncurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">유형자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#division">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunction"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#BondsIssued">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#NoncurrentLiabilities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">사채</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#SellingGeneralAdministrativeExpenses">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#OperatingIncome"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">판매비와관리비</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Negative</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#SG&amp;ARatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#IncomeStatement">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#NoncurrentAssets">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#AssetsAbstract"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">비유동자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#LongTermBorrowings">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#NoncurrentLiabilities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">장기차입금</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#InventoriesTurnoverPeriod">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">재고자산 회전기간</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#IncomeTaxRatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">법인세율</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#IntangibleAssets">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#NoncurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">무형자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#IncomeTaxExpense">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#Profit"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">법인세비용</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Negative</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#IncomeTaxRatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#numerator">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunctionInput"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#division"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#LiabilitiesAbstract">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#LiabilitiesAndEquities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">부채총계</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#ProfitBeforeTax">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#Profit"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">법인세비용차감전순이익(손실)</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:denominator rdf:resource="http://fsqa.com/acc#IncomeTaxRatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CurrentAssets">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#AssetsAbstract"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">유동자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#SalesAndSG&amp;ARatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출 및 판관 비율</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#Inventories">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">재고자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#InventoriesTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#NoncurrentLiabilities">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#LiabilitiesAbstract"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">비유동부채</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#TradeAndOtherCurrentPayables">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentLiabilities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매입채무 및 기타유동채무</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#TradePayablesTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#Ratios">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#FinanceIncome">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#ProfitBeforeTax"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">금융수익</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#TradeReceivableTurnoverPeriod">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출채권 회전기간</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#AdvancesCustomers">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentLiabilities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">선수금</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#AdvancesCustomersTurnoverPeriod"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CostOfSales">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#GrossProfit"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">매출원가</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#IncomeStatement"/>
+    <acc:numerator rdf:resource="http://fsqa.com/acc#CostOfSalesRatio"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#MathFunction">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#denominator">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunctionInput"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#division"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#AdvancesCustomersTurnoverPeriod">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">선수금 회전기간</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#TotalEquity">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#LiabilitiesAndEquities"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">자본총계</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CurrentLiabilities">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#LiabilitiesAbstract"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">유동부채</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#CashAndCashEquivalents">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#CurrentAssets"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">현금및현금성자산</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#PrepaidExpensesTurnoverPeriod">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ratio</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">선급비용 회전기간</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#Ratios"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#MathFunctionInput">
+    <rdfs:subClassOf rdf:resource="http://fsqa.com/acc#MathFunction"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#AssetsAbstract">
+    <rdf:type rdf:resource="http://fsqa.com/acc#Account"/>
+    <acc:partOf rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Value</acc:Account_Type>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">자산총계</rdfs:label>
+    <acc:Account_Belonging rdf:resource="http://fsqa.com/acc#BalanceSheet"/>
+    <acc:Account_Property rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Positive</acc:Account_Property>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#partOf">
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">partOf</rdfs:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#multiplication">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunction"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#BalanceSheet">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#addition">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunction"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#YoYRatio">
+    <rdf:type rdf:resource="http://fsqa.com/acc#MathFunction"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://fsqa.com/acc#Account">
+    <rdf:type rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
+  </rdf:Description>
+</rdf:RDF>
