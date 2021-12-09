@@ -118,6 +118,10 @@ acc:LiabilitiesAndEquities,acc:Account_Type,Value
 acc:LiabilitiesAndEquities,rdfs:label,부채와자본총계
 acc:LiabilitiesAndEquities,acc:Account_Belonging,acc:BalanceSheet
 acc:LiabilitiesAndEquities,acc:Account_Property,Positive
+acc:BalanceSheet,rdf:type,acc:Account
+acc:BalanceSheet,acc:Account_Type,Value
+acc:BalanceSheet,rdfs:label,재무상태표
+acc:BalanceSheet,acc:Account_Belonging,acc:FinancialStatement
 acc:Revenue,rdf:type,acc:Account
 acc:Revenue,acc:partOf,acc:GrossProfit
 acc:Revenue,acc:Account_Type,Value
@@ -130,7 +134,7 @@ acc:Revenue,acc:denominator,acc:InventoriesTurnoverPeriod
 acc:Revenue,acc:denominator,acc:TradePayablesTurnoverPeriod
 acc:Revenue,acc:denominator,acc:AdvancesCustomersTurnoverPeriod
 acc:Revenue,acc:denominator,acc:CostOfSalesRatio
-acc:Revenue,acc:denominator,acc:SG&ARatio
+acc:Revenue,acc:denominator,acc:SellingGeneralAdministrativeRatio
 acc:Revenue,acc:denominator,acc:ProfitRatio
 acc:CostOfSales,rdf:type,acc:Account
 acc:CostOfSales,acc:partOf,acc:GrossProfit
@@ -149,7 +153,7 @@ acc:SellingGeneralAdministrativeExpenses,acc:Account_Type,Value
 acc:SellingGeneralAdministrativeExpenses,rdfs:label,판매비와관리비
 acc:SellingGeneralAdministrativeExpenses,acc:Account_Belonging,acc:IncomeStatement
 acc:SellingGeneralAdministrativeExpenses,acc:Account_Property,Negative
-acc:SellingGeneralAdministrativeExpenses,acc:numerator,acc:SG&ARatio
+acc:SellingGeneralAdministrativeExpenses,acc:numerator,acc:SellingGeneralAdministrativeRatio
 acc:OperatingIncome,rdf:type,acc:Account
 acc:OperatingIncome,acc:partOf,acc:ProfitBeforeTax
 acc:OperatingIncome,acc:Account_Type,Value
@@ -219,18 +223,18 @@ acc:CostOfSalesRatio,acc:Account_Type,Ratio
 acc:CostOfSalesRatio,rdfs:label,매출원가율
 acc:CostOfSalesRatio,acc:Account_Belonging,acc:Ratios
 acc:CostOfSalesRatio,acc:Account_Property,Positive
-acc:CostOfSalesRatio,acc:partOf,acc:SalesAndSG&ARatio
-acc:SG&ARatio,rdf:type,acc:Account
-acc:SG&ARatio,acc:Account_Type,Ratio
-acc:SG&ARatio,rdfs:label,판관비율
-acc:SG&ARatio,acc:Account_Belonging,acc:Ratios
-acc:SG&ARatio,acc:Account_Property,Positive
-acc:SG&ARatio,acc:partOf,acc:SalesAndSG&ARatio
-acc:SalesAndSG&ARatio,rdf:type,acc:Account
-acc:SalesAndSG&ARatio,acc:Account_Type,Ratio
-acc:SalesAndSG&ARatio,rdfs:label,매출 및 판관 비율
-acc:SalesAndSG&ARatio,acc:Account_Belonging,acc:Ratios
-acc:SalesAndSG&ARatio,acc:Account_Property,Positive
+acc:CostOfSalesRatio,acc:partOf,acc:SalesAndSellingGeneralAdministrativeRatio
+acc:SellingGeneralAdministrativeRatio,rdf:type,acc:Account
+acc:SellingGeneralAdministrativeRatio,acc:Account_Type,Ratio
+acc:SellingGeneralAdministrativeRatio,rdfs:label,판관비율
+acc:SellingGeneralAdministrativeRatio,acc:Account_Belonging,acc:Ratios
+acc:SellingGeneralAdministrativeRatio,acc:Account_Property,Positive
+acc:SellingGeneralAdministrativeRatio,acc:partOf,acc:SalesAndSellingGeneralAdministrativeRatio
+acc:SalesAndSellingGeneralAdministrativeRatio,rdf:type,acc:Account
+acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Type,Ratio
+acc:SalesAndSellingGeneralAdministrativeRatio,rdfs:label,매출 및 판관 비율
+acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Belonging,acc:Ratios
+acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Property,Positive
 acc:IncomeTaxRatio,rdf:type,acc:Account
 acc:IncomeTaxRatio,acc:Account_Type,Ratio
 acc:IncomeTaxRatio,rdfs:label,법인세율
@@ -241,7 +245,12 @@ acc:ProfitRatio,acc:Account_Type,Ratio
 acc:ProfitRatio,rdfs:label,순이익율
 acc:ProfitRatio,acc:Account_Belonging,acc:Ratios
 acc:ProfitRatio,acc:Account_Property,Positive
+acc:IncomeStatement,rdf:type,acc:Account
+acc:IncomeStatement,acc:Account_Type,Value
+acc:IncomeStatement,rdfs:label,손익계산서
+acc:IncomeStatement,acc:Account_Belonging,acc:FinancialStatement
 acc:CalendarOneYear,rdf:type,time:DateTimeDescription
+acc:CalendarOneYear,rdfs:label,365
 acc:CalendarOneYear,time:hasDuration,time:day
 acc:CalendarOneYear,time:Duration,365
 acc:CalendarOneYear,acc:numerator,acc:TradeReceivableTurnoverPeriod
@@ -265,3 +274,4 @@ acc:IncomeStatement,rdf:type,rdfs:Class
 acc:BalanceSheet,rdf:type,rdfs:Class
 acc:MathFunction,rdf:type,rdfs:Class
 acc:MathFunctionInput,rdfs:subClassOf,acc:MathFunction
+acc:FinancialStatement,rdf:type,rdfs:Class

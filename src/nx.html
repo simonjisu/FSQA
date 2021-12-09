@@ -1,0 +1,108 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 100%;
+            height: 800px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"font": {"color": "black"}, "group": "BS-Value-4", "id": "\ud604\uae08\ubc0f\ud604\uae08\uc131\uc790\uc0b0", "label": "\ud604\uae08\ubc0f\ud604\uae08\uc131\uc790\uc0b0", "shape": "dot", "title": "Level:4"}, {"font": {"color": "black"}, "group": "BS-Value-3", "id": "\uc720\ub3d9\uc790\uc0b0", "label": "\uc720\ub3d9\uc790\uc0b0", "shape": "dot", "title": "Level:3"}, {"font": {"color": "black"}, "group": "BS-Value-4", "id": "\ub9e4\ucd9c\ucc44\uad8c", "label": "\ub9e4\ucd9c\ucc44\uad8c", "shape": "dot", "title": "Level:4"}, {"font": {"color": "black"}, "group": "BS-Value-4", "id": "\uc120\uae09\ube44\uc6a9", "label": "\uc120\uae09\ube44\uc6a9", "shape": "dot", "title": "Level:4"}, {"font": {"color": "black"}, "group": "BS-Value-4", "id": "\uc720\ud615\uc790\uc0b0", "label": "\uc720\ud615\uc790\uc0b0", "shape": "dot", "title": "Level:4"}, {"font": {"color": "black"}, "group": "BS-Value-3", "id": "\ube44\uc720\ub3d9\uc790\uc0b0", "label": "\ube44\uc720\ub3d9\uc790\uc0b0", "shape": "dot", "title": "Level:3"}, {"font": {"color": "black"}, "group": "BS-Value-1", "id": "\uc790\uc0b0\ucd1d\uacc4", "label": "\uc790\uc0b0\ucd1d\uacc4", "shape": "dot", "title": "Level:1"}]);
+        edges = new vis.DataSet([{"arrows": "to", "from": "\ud604\uae08\ubc0f\ud604\uae08\uc131\uc790\uc0b0", "titel": "partOf", "to": "\uc720\ub3d9\uc790\uc0b0", "weight": 2}, {"arrows": "to", "from": "\ub9e4\ucd9c\ucc44\uad8c", "titel": "partOf", "to": "\uc720\ub3d9\uc790\uc0b0", "weight": 2}, {"arrows": "to", "from": "\uc120\uae09\ube44\uc6a9", "titel": "partOf", "to": "\uc720\ub3d9\uc790\uc0b0", "weight": 2}, {"arrows": "to", "from": "\uc720\ud615\uc790\uc0b0", "titel": "partOf", "to": "\ube44\uc720\ub3d9\uc790\uc0b0", "weight": 2}, {"arrows": "to", "from": "\ube44\uc720\ub3d9\uc790\uc0b0", "titel": "partOf", "to": "\uc790\uc0b0\ucd1d\uacc4", "weight": 2}, {"arrows": "to", "from": "\uc720\ub3d9\uc790\uc0b0", "titel": "partOf", "to": "\uc790\uc0b0\ucd1d\uacc4", "weight": 2}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>

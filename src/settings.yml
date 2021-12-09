@@ -1,0 +1,9 @@
+ontology:
+  graph_drawer:
+    height: '800px' 
+    width: '100%' 
+    directed: true 
+    font_color: 'black' 
+    heading: '' 
+    notebook: true
+    show_file_name: 'nx.html'

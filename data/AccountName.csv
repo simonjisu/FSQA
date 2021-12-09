@@ -1,0 +1,42 @@
+acc_name_kor,acc_name_eng,group
+유동자산,CurrentAssets,BS-Value-3
+현금및현금성자산,CashAndCashEquivalents,BS-Value-4
+매출채권,TradeAndOtherCurrentReceivables,BS-Value-4
+선급비용,PrepaidExpenses,BS-Value-4
+재고자산,Inventories,BS-Value-4
+비유동자산,NoncurrentAssets,BS-Value-3
+유형자산,PropertyPlantAndEquipment,BS-Value-4
+무형자산,IntangibleAssets,BS-Value-4
+자산총계,AssetsAbstract,BS-Value-1
+유동부채,CurrentLiabilities,BS-Value-3
+매입채무 및 기타유동채무,TradeAndOtherCurrentPayables,BS-Value-4
+단기차입금,ShorttermBorrowings,BS-Value-4
+선수금,AdvancesCustomers,BS-Value-4
+비유동부채,NoncurrentLiabilities,BS-Value-3
+사채,BondsIssued,BS-Value-4
+장기차입금,LongTermBorrowings,BS-Value-4
+부채총계,LiabilitiesAbstract,BS-Value-2
+자본총계,TotalEquity,BS-Value-2
+부채와자본총계,LiabilitiesAndEquities,BS-Value-1
+매출채권 회전기간,TradeReceivableTurnoverPeriod,BS-Ratio-98
+선급비용 회전기간,PrepaidExpensesTurnoverPeriod,BS-Ratio-98
+재고자산 회전기간,InventoriesTurnoverPeriod,BS-Ratio-98
+매입채무 회전기간,TradePayablesTurnoverPeriod,BS-Ratio-98
+선수금 회전기간,AdvancesCustomersTurnoverPeriod,BS-Ratio-98
+수익(매출액),Revenue,IS-Value-5
+매출원가,CostOfSales,IS-Value-5
+매출총이익,GrossProfit,IS-Value-4
+판매비와관리비,SellingGeneralAdministrativeExpenses,IS-Value-4
+영업이익,OperatingIncome,IS-Value-3
+금융수익,FinanceIncome,IS-Value-3
+금융비용,FinancialExpenses,IS-Value-3
+법인세비용차감전순이익(손실),ProfitBeforeTax,IS-Value-2
+법인세비용,IncomeTaxExpense,IS-Value-2
+당기순이익(손실),Profit,IS-Value-1
+매출원가율,CostOfSalesRatio,IS-Ratio-98
+판관비율,SellingGeneralAdministrativeRatio,IS-Ratio-98
+매출 및 판관 비율,SalesAndSellingGeneralAdministrativeRatio,IS-Ratio-98
+법인세율,IncomeTaxRatio,IS-Ratio-98
+순이익율,ProfitRatio,IS-Ratio-98
+손익계산서,IncomeStatement,IS-Value-0
+재무상태표,BalanceSheet,BS-Value-0

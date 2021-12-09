@@ -6,9 +6,19 @@
 
 acc:Account a rdfs:Class .
 
-acc:BalanceSheet a rdfs:Class .
+acc:BalanceSheet a acc:Account,
+        rdfs:Class ;
+    rdfs:label "재무상태표"^^xsd:string ;
+    acc:Account_Belonging acc:FinancialStatement ;
+    acc:Account_Type "Value"^^xsd:string .
 
-acc:IncomeStatement a rdfs:Class .
+acc:FinancialStatement a rdfs:Class .
+
+acc:IncomeStatement a acc:Account,
+        rdfs:Class ;
+    rdfs:label "손익계산서"^^xsd:string ;
+    acc:Account_Belonging acc:FinancialStatement ;
+    acc:Account_Type "Value"^^xsd:string .
 
 acc:MathFunction a rdfs:Class .
 
@@ -30,6 +40,7 @@ acc:BondsIssued a acc:Account ;
     acc:partOf acc:NoncurrentLiabilities .
 
 acc:CalendarOneYear a time:DateTimeDescription ;
+    rdfs:label "365"^^xsd:string ;
     acc:numerator acc:AdvancesCustomersTurnoverPeriod,
         acc:InventoriesTurnoverPeriod,
         acc:PrepaidExpensesTurnoverPeriod,
@@ -121,7 +132,7 @@ acc:Revenue a acc:Account ;
         acc:InventoriesTurnoverPeriod,
         acc:PrepaidExpensesTurnoverPeriod,
         acc:ProfitRatio,
-        <http://fsqa.com/acc#SG&ARatio>,
+        acc:SellingGeneralAdministrativeRatio,
         acc:TradePayablesTurnoverPeriod,
         acc:TradeReceivableTurnoverPeriod ;
     acc:partOf acc:GrossProfit .
@@ -131,7 +142,7 @@ acc:SellingGeneralAdministrativeExpenses a acc:Account ;
     acc:Account_Belonging acc:IncomeStatement ;
     acc:Account_Property "Negative"^^xsd:string ;
     acc:Account_Type "Value"^^xsd:string ;
-    acc:numerator <http://fsqa.com/acc#SG&ARatio> ;
+    acc:numerator acc:SellingGeneralAdministrativeRatio ;
     acc:partOf acc:OperatingIncome .
 
 acc:ShorttermBorrowings a acc:Account ;
@@ -191,7 +202,7 @@ acc:CostOfSalesRatio a acc:Account ;
     acc:Account_Belonging acc:Ratios ;
     acc:Account_Property "Positive"^^xsd:string ;
     acc:Account_Type "Ratio"^^xsd:string ;
-    acc:partOf <http://fsqa.com/acc#SalesAndSG&ARatio> .
+    acc:partOf acc:SalesAndSellingGeneralAdministrativeRatio .
 
 acc:GrossProfit a acc:Account ;
     rdfs:label "매출총이익"^^xsd:string ;
@@ -256,18 +267,18 @@ acc:ProfitRatio a acc:Account ;
     acc:Account_Property "Positive"^^xsd:string ;
     acc:Account_Type "Ratio"^^xsd:string .
 
-<http://fsqa.com/acc#SG&ARatio> a acc:Account ;
-    rdfs:label "판관비율"^^xsd:string ;
-    acc:Account_Belonging acc:Ratios ;
-    acc:Account_Property "Positive"^^xsd:string ;
-    acc:Account_Type "Ratio"^^xsd:string ;
-    acc:partOf <http://fsqa.com/acc#SalesAndSG&ARatio> .
-
-<http://fsqa.com/acc#SalesAndSG&ARatio> a acc:Account ;
+acc:SalesAndSellingGeneralAdministrativeRatio a acc:Account ;
     rdfs:label "매출 및 판관 비율"^^xsd:string ;
     acc:Account_Belonging acc:Ratios ;
     acc:Account_Property "Positive"^^xsd:string ;
     acc:Account_Type "Ratio"^^xsd:string .
+
+acc:SellingGeneralAdministrativeRatio a acc:Account ;
+    rdfs:label "판관비율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:partOf acc:SalesAndSellingGeneralAdministrativeRatio .
 
 acc:division a acc:MathFunction .
 
