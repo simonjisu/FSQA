@@ -4,8 +4,6 @@ import pandas as pd
 from pyvis.network import Network
 from collections import defaultdict
 
-
-
 class Node(object):
     def __init__(self):
         pass

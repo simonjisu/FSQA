@@ -8,3 +8,8 @@ pandas
 matplotlib
 seaborn
 jupyterlab
+rdflib
+pyvis
+streamlit
+spacy[transformers]
+spacy-streamlit
