@@ -49,7 +49,7 @@ if submit_button:
     st.write('Scenario Question:', sentence)
     nlu_results = nlu_module(sentence=sentence, scenario=scenario_option)
     key_information = dialog_manager.post_process(nlu_results)
-
+    # TODO: graph search for target account
     query_statement = """
     SELECT ?s ?p ?o WHERE { 
         VALUES ?s { acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses acc:PropertyPlantAndEquipment acc:NoncurrentAssets acc:CurrentAssets }
