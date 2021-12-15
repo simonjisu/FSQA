@@ -38,18 +38,19 @@ class NLU(object):
         ## PAST
         if scenario == 1:
             nlu_results['context_intent'] = 'PAST.value'
-            nlu_results['tags']['account'] = 'IS.Revenue'
-        elif scenario == 2:
-            nlu_results['context_intent'] = 'PAST.value'
             nlu_results['tags']['account'] = 'IS.CostOfSalesRatio'
         ## IF
-        elif scenario == 3: 
+        elif scenario == 2:
             nlu_results['context_intent'] = 'IF.account_change'
             nlu_results['tags']['subject_account'] = 'IS.CostOfSales'
-            nlu_results['tags']['target_account'] = 'IS.OperatingIncome'
+            nlu_results['tags']['account'] = 'IS.OperatingIncome'
             nlu_results['tags']['subject_apply'] = lambda x: x*nlu_results['percent']
+        ## Embedded ML
+        elif scenario == 3: 
+            nlu_results['context_intent'] = 'EMB.forecast'
+            nlu_results['tags']['account'] = 'IS.Revenue'
+            nlu_results['tags']['model'] = 'linear'
         else:
             nlu_results['context_intent'] = None
-            
 
         return nlu_results

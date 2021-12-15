@@ -1,7 +1,7 @@
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-from typing import Union, Dict
+from typing import Union
 
 class DialogManager(object):
     def __init__(self):
@@ -14,16 +14,18 @@ class DialogManager(object):
         self._update_today()
         self.context = None
         self.intent = None
+        # Need to generalize this knowledge of time
         self.knowledge = {
             'this year': +0,
             'last year': -1,
-            'next year': +1
+            'next year': +1,
+            '4th quarter': +0
         }
+
         self.turns = defaultdict(dict)
         self.global_turn = 0
         self.turns[self.global_turn]['context'] = self.context
         self.turns[self.global_turn]['intent'] = self.intent
-
 
     def update_turn(self, turn):
         self.global_turn += 1
@@ -53,10 +55,10 @@ class DialogManager(object):
             dict: return the key information by tasks
         """
         self._update_today()
-        
+        print(self.today)
         context_intent = nlu_results['context_intent']
         tags = nlu_results['tags']
-
+        print(tags)
         if context_intent is not None:
             context, intent = context_intent.split('.')
         else: 
@@ -75,9 +77,13 @@ class DialogManager(object):
         if context == 'PAST':
             key_information['account'] = tags.get('account')
         elif context == 'IF':
-            key_information['subject_account']= tags.get('subject_account')
-            key_information['target_account']= tags.get('target_account')
-            key_information['subject_apply']= tags.get('subject_apply')
+            key_information['subject_account'] = tags.get('subject_account')
+            key_information['account'] = tags.get('account')
+            key_information['subject_apply'] = tags.get('subject_apply')
+        elif context == 'EMB':
+            key_information['account'] = tags.get('account')
+            key_information['model'] = tags.get('model')
+            
         else:
             key_information['context'] = context
             key_information['intent'] = intent
@@ -94,7 +100,7 @@ class DialogManager(object):
                 today_year = (self.today + relativedelta(years=self.knowledge[date_keyword])).year 
                 
         if self.today >= dt.strptime(f'{today_year}-04-01', '%Y-%m-%d'):
-            # true: year = 2020   2021.12.08 >= 2021.04.01 
+            # true : year = 2020  2021.12.08 >= 2021.04.01 
             # false: year = 2019  2021.01.08 >= 2021.04.01 
             account_year = today_year - 1
         else:
