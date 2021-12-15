@@ -13,3 +13,5 @@ pyvis
 streamlit
 spacy[transformers]
 spacy-streamlit
+scikit-learn
+statsmodels
