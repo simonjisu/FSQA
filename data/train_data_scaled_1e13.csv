@@ -1,4 +1,4 @@
-bsns_year,quarter,value,previous
+bsns_year,quarter,current,previous
 2016,2Q,5.093712,4.9782252
 2016,3Q,4.7815633,5.093712
 2016,4Q,5.333174,4.7815633

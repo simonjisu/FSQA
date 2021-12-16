@@ -44,7 +44,7 @@ class NLU(object):
             nlu_results['context_intent'] = 'IF.account_change'
             nlu_results['tags']['subject_account'] = 'IS.CostOfSales'
             nlu_results['tags']['account'] = 'IS.OperatingIncome'
-            nlu_results['tags']['subject_apply'] = lambda x: x*nlu_results['percent']
+            nlu_results['tags']['subject_apply'] = ("increase", nlu_results['tags']['percent'])
         ## Embedded ML
         elif scenario == 3: 
             nlu_results['context_intent'] = 'EMB.forecast'

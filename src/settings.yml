@@ -1,16 +1,18 @@
 ontology:
   graph_drawer:
-    height: '800px' 
+    height: '600px' 
     width: '100%' 
     directed: true 
     font_color: 'black' 
     heading: '' 
     notebook: true
     show_file_name: 'nx.html'
+  model:
+    model_name: 'linear_model.pickle'
 
 db:
   dbname: 'fsqa'
   host: 'localhost'
   user: 'postgres'
-  password: ''
+  password: '1234'
   port: 5432

@@ -3,8 +3,10 @@ from rdflib import Graph, Literal, URIRef
 from psycopg import sql
 import networkx as nx
 import pandas as pd
+import numpy as np
 from pyvis.network import Network
 from collections import defaultdict
+from embeddedML import LinearRegression
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -152,7 +154,6 @@ class SparqlHandler():
         partof_query += sql.SQL(" )")
         return partof_query
 
-
 class GraphDrawer():
     def __init__(
         self, 
@@ -223,10 +224,17 @@ class GraphDrawer():
         return nx_graph
 
 class OntologySystem():
-    def __init__(self, acc_name_path, rdf_path, kwargs_graph_drawer):
+    def __init__(self, acc_name_path, rdf_path, model_path, kwargs_graph_drawer):
         
         self.graph_drawer = GraphDrawer(**kwargs_graph_drawer)
         self.sparql = SparqlHandler(rdf_path)
+        self.embmodels = {
+            'linear': LinearRegression(
+                model_path, 
+                scaler=lambda x: x / 1e13, 
+                inv_scaler=lambda x: np.array(x*1e13).astype(np.int64)
+            )
+        }
 
         df_account = pd.read_csv(acc_name_path, encoding='utf-8')
         self.ACC_DICT = defaultdict(dict)
@@ -265,8 +273,8 @@ class OntologySystem():
         sparql_results = self.sparql.get_sub_tree_relations(sub_tree)
         self.get_graph(sparql_results, show=True)
 
-    def get_SQL(self, sparql_results, account, quarter, year):
-        
+    def get_SQL(self, sparql_results, account, quarter, year, sub_account=None): 
+        # sub_account: {acc_name: ('*', 1.1)}   
         sparql_results = list(map(lambda x: tuple(self.graph_drawer.convert_to_string(acc) for acc in x), list(sparql_results)))
         role_dict = defaultdict(list)
         for s, p, o in sparql_results:
@@ -274,8 +282,8 @@ class OntologySystem():
                 role_dict[o].append((s, p))
         
         # leaf node
-        base_query_format = """SELECT T.value AS {} FROM {} AS T """
-        # search from top to bottom
+        base_query_format = """SELECT (T.value){} AS {} FROM {} AS T """
+        # search from top to bottom until reach all the leaf node
         query_dict = defaultdict(dict)
         for parent, children in role_dict.items():
             # start from account node
@@ -284,9 +292,17 @@ class OntologySystem():
                     # leaf node
                     if query_dict[child].get('parents') is None:
                         query_dict[child]['parents'] = []
+
+                    # check if has subject_account 
+                    if child in sub_account:
+                        apply, apply_number = sub_account[child]
+                        sub_apply_query = sql.SQL(' ').join([sql.SQL(apply), apply_number])
+                    else:
+                        sub_apply_query = sql.SQL('')
+                    
                     acc_knowledge = self.ACC_DICT[child]['group'].lower().split('-')[0]
                     view_table = f"vt_{acc_knowledge.lower()}_005930"
-                    select_format = sql.SQL(base_query_format).format(sql.Identifier(child.lower()), sql.Identifier(view_table))
+                    select_format = sql.SQL(base_query_format).format(sub_apply_query, sql.Identifier(child.lower()), sql.Identifier(view_table))
                     where_format = sql.SQL("""WHERE T.bsns_year = {} AND T.quarter = {} AND T.account = {}""").format(year, quarter, child)
                     query = select_format + where_format
                     
@@ -294,16 +310,15 @@ class OntologySystem():
                     query_dict[child]['sign'] = 1.0 if self.ACC_DICT[child]['Account_Property'].lower() == 'positive' else -1.0
                     query_dict[child]['parents'].append((role, parent))
 
-        role_dict_sorted = dict(sorted(list(role_dict.items()), key=lambda x: all([acc in list(query_dict.keys()) for acc, _ in x[1]]), reverse=True))
+        # sort the nodes to make sure nodes with the leaf nodes comes first
+        role_dict_sorted = dict(sorted(list(role_dict.items()), 
+            key=lambda x: all([acc in list(query_dict.keys()) for acc, _ in x[1]]), reverse=True))
         
         for acc, childrens in role_dict_sorted.items():
-            
             acc_sign = 1.0 if self.ACC_DICT[acc]['Account_Property'].lower() == 'positive' else -1.0
             query_dict[acc]['sign'] = acc_sign
             qs = []
-            print(acc, acc_sign)
             for child, role in childrens:
-                print(child, self.ACC_DICT[child])
                 qs.append(
                     (role,
                     query_dict[child]['sign'],

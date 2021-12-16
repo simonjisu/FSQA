@@ -21,6 +21,7 @@ def create_modules(data_path, settings):
     ontology_module = OntologySystem(
         acc_name_path=data_path / 'AccountName.csv', 
         rdf_path=data_path / 'AccountRDF.xml',
+        model_path=data_path / settings['ontology']['model']['model_name'],
         kwargs_graph_drawer=settings['ontology']['graph_drawer']
     )
     database = DBHandler(settings['db'])
