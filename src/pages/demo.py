@@ -39,6 +39,8 @@ def write(data_path, modules):
         sub_tree = nx.bfs_successors(nx_graph, source=account)
 
         # TODO: Get Query Part
+        
+
         ontology_module.get_sub_tree_graph(sub_tree)
 
         if key_information['context'] != 'EMB':
@@ -54,6 +56,7 @@ def write(data_path, modules):
             st.line_chart(df_rev.loc[:, ['Date', 'Revenue']].set_index('Date') / 1e9)
 
             # TODO: add machine learning prediction
+
 
         with st.expander("Results from each module in json"):
             st.write("**NLU module result: **")
