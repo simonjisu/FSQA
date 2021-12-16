@@ -1,5 +1,6 @@
 
 from rdflib import Graph, Literal, URIRef
+from psycopg import sql
 import networkx as nx
 import pandas as pd
 from pyvis.network import Network
@@ -13,13 +14,17 @@ class SparqlHandler():
     def query(self, query_statement):
         return self.graph.query(query_statement)
 
-    def get_sub_tree_relations(self, sub_tree):
+    def get_related_nodes_from_sub_tree(self, sub_tree):
         nodes = set()
         for k, v in dict(sub_tree).items():
             for a in v:
                 nodes.add(a)
             nodes.add(k)
         nodes = list(map(lambda x: f'acc:{x}', nodes))
+        return nodes
+
+    def get_sub_tree_relations(self, sub_tree):
+        nodes = self.get_related_nodes_from_sub_tree(sub_tree)
         query_statement = """
         SELECT ?s ?p ?o 
         WHERE { 
@@ -29,7 +34,7 @@ class SparqlHandler():
             ?s ?p ?o .
         }
         """
-        return self.graph.query(query_statement)
+        return self.query(query_statement)
 
     def get_predefined_knowledge(self, knowledge:str):
         # BS, IS, BSR, ISR
@@ -105,6 +110,49 @@ class SparqlHandler():
         )
         return knowledge_queries[knowledge]
 
+    def get_div_query(self, qs, acc):
+        X, Y = qs
+        if (X[0] == 'denominator') and (Y[0] == 'numerator'):
+            B = X
+            A = Y
+        elif (Y[0] == 'denominator') and (X[0] == 'numerator'):
+            B = Y
+            A = X
+        A_sign, A_node, A_q = A[1:]
+        B_sign, B_node, B_q = B[1:]
+        div_query_format = """
+        SELECT ({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
+        FROM (
+            ( {} ) AS A
+            JOIN 
+            ( {} ) AS B ON 1=1
+        ) 
+        """
+        div_query = sql.SQL(div_query_format).format(
+            abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
+        return div_query
+
+    def get_partof_query(self, qs, acc):
+        # SELECT
+        partof_query = sql.SQL("""SELECT """)
+        partof_query += sql.SQL(' + ').join(
+            [sql.SQL('({} * CAST({}.{} AS REAL)) ').format(sign, sql.Identifier(f'X{i}'), sql.Identifier(node.lower())) for i, (_, sign, node, _) in enumerate(qs)]
+        )
+        partof_query += sql.SQL(" AS {}").format(sql.Identifier(acc.lower()))
+        # FROM
+        partof_query += sql.SQL(" FROM ( ")
+        for i, (*_, query) in enumerate(qs):
+            partof_query += sql.SQL(f"( ") + query + sql.SQL(" ) AS {}").format(sql.Identifier(f'X{i}'))
+            if i == 0:
+                partof_query += sql.SQL(" JOIN ")
+            elif i == (len(qs)-1):
+                partof_query += sql.SQL(" ON 1=1 ")
+            else:
+                partof_query += sql.SQL(" ON 1=1 JOIN ")
+        partof_query += sql.SQL(" )")
+        return partof_query
+
+
 class GraphDrawer():
     def __init__(
         self, 
@@ -175,7 +223,7 @@ class GraphDrawer():
         return nx_graph
 
 class OntologySystem():
-    def __init__(self, acc_name_path,rdf_path,kwargs_graph_drawer):
+    def __init__(self, acc_name_path, rdf_path, kwargs_graph_drawer):
         
         self.graph_drawer = GraphDrawer(**kwargs_graph_drawer)
         self.sparql = SparqlHandler(rdf_path)
@@ -190,7 +238,7 @@ class OntologySystem():
             self.ACC_DICT[eng]['group'] = group
         self.ACC_DICT['CalendarOneYear']['name'] = '365 일'
         self.ACC_DICT['CalendarOneYear']['group'] = 99
-
+        
         query_statement = """
         SELECT ?s ?p ?literal 
         WHERE { 
@@ -216,3 +264,56 @@ class OntologySystem():
     def get_sub_tree_graph(self, sub_tree):
         sparql_results = self.sparql.get_sub_tree_relations(sub_tree)
         self.get_graph(sparql_results, show=True)
+
+    def get_SQL(self, sparql_results, account, quarter, year):
+        
+        sparql_results = list(map(lambda x: tuple(self.graph_drawer.convert_to_string(acc) for acc in x), list(sparql_results)))
+        role_dict = defaultdict(list)
+        for s, p, o in sparql_results:
+            if s not in role_dict[o]:
+                role_dict[o].append((s, p))
+        
+        # leaf node
+        base_query_format = """SELECT T.value AS {} FROM {} AS T """
+        # search from top to bottom
+        query_dict = defaultdict(dict)
+        for parent, children in role_dict.items():
+            # start from account node
+            for child, role in children:
+                if child not in role_dict:
+                    # leaf node
+                    if query_dict[child].get('parents') is None:
+                        query_dict[child]['parents'] = []
+                    acc_knowledge = self.ACC_DICT[child]['group'].lower().split('-')[0]
+                    view_table = f"vt_{acc_knowledge.lower()}_005930"
+                    select_format = sql.SQL(base_query_format).format(sql.Identifier(child.lower()), sql.Identifier(view_table))
+                    where_format = sql.SQL("""WHERE T.bsns_year = {} AND T.quarter = {} AND T.account = {}""").format(year, quarter, child)
+                    query = select_format + where_format
+                    
+                    query_dict[child]['query'] = query
+                    query_dict[child]['sign'] = 1.0 if self.ACC_DICT[child]['Account_Property'].lower() == 'positive' else -1.0
+                    query_dict[child]['parents'].append((role, parent))
+
+        role_dict_sorted = dict(sorted(list(role_dict.items()), key=lambda x: all([acc in list(query_dict.keys()) for acc, _ in x[1]]), reverse=True))
+        
+        for acc, childrens in role_dict_sorted.items():
+            
+            acc_sign = 1.0 if self.ACC_DICT[acc]['Account_Property'].lower() == 'positive' else -1.0
+            query_dict[acc]['sign'] = acc_sign
+            qs = []
+            print(acc, acc_sign)
+            for child, role in childrens:
+                print(child, self.ACC_DICT[child])
+                qs.append(
+                    (role,
+                    query_dict[child]['sign'],
+                    child,
+                    query_dict[child]['query'])
+                )
+            if role.lower() != 'partof':
+                query_dict[acc]['query'] = self.sparql.get_div_query(qs, acc)
+            else:
+                query_dict[acc]['query'] = self.sparql.get_partof_query(qs, acc)
+            
+
+        return query_dict[account]['query']

@@ -4,6 +4,7 @@ import streamlit as st
 from nlu import NLU
 from dialog import DialogManager
 from ontology import OntologySystem
+from db import DBHandler
 import yaml
 import pages.demo
 import pages.graph
@@ -22,7 +23,8 @@ def create_modules(data_path, settings):
         rdf_path=data_path / 'AccountRDF.xml',
         kwargs_graph_drawer=settings['ontology']['graph_drawer']
     )
-    return nlu_module, dialog_manager, ontology_module
+    database = DBHandler(settings['db'])
+    return nlu_module, dialog_manager, ontology_module, database
     
 def main():
     st.set_page_config(

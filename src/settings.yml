@@ -7,3 +7,10 @@ ontology:
     heading: '' 
     notebook: true
     show_file_name: 'nx.html'
+
+db:
+  dbname: 'fsqa'
+  host: 'localhost'
+  user: 'postgres'
+  password: ''
+  port: 5432

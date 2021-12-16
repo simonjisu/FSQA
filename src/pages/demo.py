@@ -5,7 +5,7 @@ import spacy_streamlit
 import streamlit.components.v1 as components
 
 def write(data_path, modules):
-    nlu_module, dialog_manager, ontology_module = modules
+    nlu_module, dialog_manager, ontology_module, database = modules
     # Form
     with st.form(key='Form'):
         st.write('Select a scenario')
@@ -32,18 +32,26 @@ def write(data_path, modules):
         nlu_results = nlu_module(sentence=sentence, scenario=scenario_id)
         key_information = dialog_manager.post_process(nlu_results)
         
+        context = key_information['context']
         knowledge, account = key_information['account'].split('.')
-        knowledge_query = ontology_module.sparql.get_predefined_knowledge(knowledge=knowledge+'R')
-        results = ontology_module.sparql.query(knowledge_query)
-        nx_graph = ontology_module.get_nx_graph(results)
-        sub_tree = nx.bfs_successors(nx_graph, source=account)
+        quarter = '4Q' if key_information.get('quarter') is None else key_information.get('quarter')
+        year = key_information['year']
 
-        # TODO: Get Query Part
         
 
-        ontology_module.get_sub_tree_graph(sub_tree)
+        if context != 'EMB':
+            knowledge_query = ontology_module.sparql.get_predefined_knowledge(knowledge=knowledge+'R')
+            results = ontology_module.sparql.query(knowledge_query)
+            nx_graph = ontology_module.get_nx_graph(results)
+            sub_tree = nx.bfs_successors(nx_graph, source=account)
+            sparql_results = ontology_module.sparql.get_sub_tree_relations(dict(sub_tree))
+            # Get Query Part
+            query_statement = ontology_module.get_SQL(sparql_results, account, quarter, year)
+            query_result = database.query(query_statement)
 
-        if key_information['context'] != 'EMB':
+            ontology_module.get_graph(sparql_results, show=True)
+            st.write(query_result)
+
             htmlfile = open('nx.html', 'r', encoding='utf-8')
             source_code = htmlfile.read() 
             components.html(source_code, height=700, width=700)
