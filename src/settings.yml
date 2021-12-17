@@ -14,5 +14,5 @@ db:
   dbname: 'fsqa'
   host: 'localhost'
   user: 'postgres'
-  password: '1234'
+  password: ''
   port: 5432

@@ -9,7 +9,8 @@ def write(data_path, modules):
     nlu_module, dialog_manager, ontology_module, database = modules
     # Form
     with st.form(key='Form'):
-        st.write('Select a scenario')
+        st.write('**Select a scenario**')
+        st.write('This is a demonstration only to show how does the framework works, so natural languages understanding part is treated as given.')
         scenario_objects = {
             'none': 0, 
             'Asking information based on fact and knowledge': 1, 
@@ -62,7 +63,7 @@ def write(data_path, modules):
             htmlfile = open('nx.html', 'r', encoding='utf-8')
             source_code = htmlfile.read() 
             components.html(source_code, height=600, width=700)
-            st.write('')
+            
         else:
             model_type = key_information.get('model')
             model = ontology_module.embmodels[model_type]
@@ -76,6 +77,12 @@ def write(data_path, modules):
             st.write(f'Prediction given previous quarter revenue, revenue of {quarter} will be **{result[0]:,d}** won.')
             st.write('### Model Summary')
             st.write(model.summary())
+
+        st.write('')
+        if context != 'EMB':
+            st.image(data_path / 'figs' / 'app_knowledge.png')
+        else:
+            st.image(data_path / 'figs' / 'app_prediction.png')
 
         with st.expander("Results from each module in json"):
             st.write("**NLU module result: **")
