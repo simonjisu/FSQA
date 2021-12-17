@@ -274,7 +274,7 @@ class OntologySystem():
         self.get_graph(sparql_results, show=True)
 
     def get_SQL(self, sparql_results, account, quarter, year, sub_account=None): 
-        # sub_account: {acc_name: ('*', 1.1)}   
+        # sub_account: {acc_name: ('*', 1.1)}
         sparql_results = list(map(lambda x: tuple(self.graph_drawer.convert_to_string(acc) for acc in x), list(sparql_results)))
         role_dict = defaultdict(list)
         for s, p, o in sparql_results:
@@ -294,7 +294,7 @@ class OntologySystem():
                         query_dict[child]['parents'] = []
 
                     # check if has subject_account 
-                    if child in sub_account:
+                    if  (sub_account is not None) and (child in sub_account):
                         apply, apply_number = sub_account[child]
                         sub_apply_query = sql.SQL(' ').join([sql.SQL(apply), apply_number])
                     else:

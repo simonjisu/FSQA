@@ -95,7 +95,8 @@ class DialogManager(object):
             try: 
                 today_year = int(date_keyword)
             except ValueError:
-                today_year = (self.today + relativedelta(years=self.knowledge[date_keyword])).year 
+                # today_year = (self.today + relativedelta(years=self.knowledge[date_keyword])).year 
+                today_year = self.today.year
                 
         if self.today >= dt.strptime(f'{today_year}-04-01', '%Y-%m-%d'):
             # true : year = 2020  2021.12.08 >= 2021.04.01 

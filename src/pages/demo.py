@@ -29,7 +29,7 @@ def write(data_path, modules):
 
         submit_button = st.form_submit_button(label='Submit')
 
-    if submit_button:
+    if submit_button and (scenario_option != 'none'):
         st.write('### Scenario Question')
         st.write(f'**{sentence}**')
 
@@ -80,9 +80,9 @@ def write(data_path, modules):
 
         st.write('')
         if context != 'EMB':
-            st.image(data_path / 'figs' / 'app_knowledge.png')
+            st.image(str(data_path / 'figs' / 'app_knowledge.png'))
         else:
-            st.image(data_path / 'figs' / 'app_prediction.png')
+            st.image(str(data_path / 'figs' / 'app_prediction.png'))
 
         with st.expander("Results from each module in json"):
             st.write("**NLU module result: **")
