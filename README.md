@@ -1,6 +1,8 @@
-# FSQA
+# A Framework for Enhancing Boardroom TODS with Financial Ontology and Embedded Machine Learning
 
-Financial Statements Question &amp; Answering
+A demonstration about how does the framework might working in a broad perspective.
+
+Financial Statements Question and Answering
 
 # prerequisite
 
