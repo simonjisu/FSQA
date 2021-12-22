@@ -7,6 +7,7 @@ ontology:
     heading: '' 
     notebook: true
     show_file_name: 'nx.html'
+    label_name: 'eng_name'
   model:
     model_name: 'linear_model.pickle'
 

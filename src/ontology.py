@@ -164,6 +164,7 @@ class GraphDrawer():
         heading='', 
         notebook=True,
         show_file_name='nx.html',
+        label_name='eng_name'
     ):
         self.height = height
         self.width = width
@@ -172,6 +173,7 @@ class GraphDrawer():
         self.heading = heading
         self.notebook = notebook
         self.show_file_name = show_file_name
+        self.label_name = label_name
         self.size_dict = {
             0: 20, 1: 18, 2: 16, 3: 14, 4: 12, 5: 10, 98: 12, 99: 10
         }
@@ -201,8 +203,8 @@ class GraphDrawer():
             link = self.convert_to_string(link)
             trg = self.convert_to_string(trg)
 
-            src_label = acc_dict[src]['name']
-            trg_label = acc_dict[trg]['name']
+            src_label = acc_dict[src][self.label_name]
+            trg_label = acc_dict[trg][self.label_name]
             src_group = acc_dict[src]['group']
             trg_group = acc_dict[trg]['group']
             src_fs, src_type, src_group = acc_dict[src]['group'].split('-')
@@ -239,12 +241,15 @@ class OntologySystem():
         df_account = pd.read_csv(acc_name_path, encoding='utf-8')
         self.ACC_DICT = defaultdict(dict)
         for _, row in df_account.iterrows():
+            acc = row['acc']
             eng = row['acc_name_eng']
             kor = row['acc_name_kor']
             group = row['group']
-            self.ACC_DICT[eng]['name'] = kor
-            self.ACC_DICT[eng]['group'] = group
-        self.ACC_DICT['CalendarOneYear']['name'] = '365 일'
+            self.ACC_DICT[acc]['kor_name'] = kor
+            self.ACC_DICT[acc]['eng_name'] = eng
+            self.ACC_DICT[acc]['group'] = group
+        self.ACC_DICT['CalendarOneYear']['eng_name'] = '365 days'
+        self.ACC_DICT['CalendarOneYear']['kor_name'] = '365 일'
         self.ACC_DICT['CalendarOneYear']['group'] = 99
         
         query_statement = """
