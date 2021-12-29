@@ -154,7 +154,7 @@ class NLUModel(pl.LightningModule):
         return loss
 
     def cal_loss(self, outputs, targets):
-        has_relation_loss = self.losses['bce'](outputs['has_relation'], targets['tags'].float())
+        has_relation_loss = self.losses['bce'](outputs['has_relation'], targets['has_relation'].float())
 
         tags_loss = self.losses['ce'](outputs['tags'], targets['tags'])
         intent_loss = self.losses['ce'](outputs['intent'], targets['intent'])
