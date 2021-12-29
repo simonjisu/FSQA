@@ -173,7 +173,8 @@ class NLUModel(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
         lr_schedulers = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
-        return optimizer, lr_schedulers
+        
+        return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
 
     def predict(self, input_ids, token_type_ids, attention_mask):
         outputs = self.forward(input_ids, token_type_ids, attention_mask)
