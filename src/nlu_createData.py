@@ -9,8 +9,7 @@ from collections import defaultdict
 
 from sklearn.model_selection import StratifiedShuffleSplit
 from nlu_utils import NLUTokenizer
-from ontology import GraphDrawer
-from rdflib import Graph
+from rdflib import Graph, Literal, URIRef
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -117,6 +116,18 @@ class SparqlHandler():
         )
         return knowledge_queries[knowledge]
 
+
+def convert_to_string(x):
+        if isinstance(x, URIRef):
+            if len(x.split('#')) == 2:
+                return x.split('#')[1]
+            else:
+                raise ValueError(f'Split error {x}')
+        elif isinstance(x, Literal):
+            return str(x)
+        else:
+            raise ValueError(f'Returned None')
+
 def get_entity(s, x, tag):
     idx = s.index(x)
     return (idx, idx+len(x), tag)
@@ -126,7 +137,7 @@ def get_role_dict(sparql, knowledge):
     sparql_results = sparql.query(knowledge_query)
     role_dict = defaultdict(list)
     for s, p, o in sparql_results:
-        s, p, o = map(GraphDrawer.convert_to_string, [s, p, o])
+        s, p, o = map(convert_to_string, [s, p, o])
         if s == 'CalendarOneYear' or o == 'CalendarOneYear':
             continue
         if s not in role_dict[o]:
