@@ -9,8 +9,8 @@ from pathlib import Path
 from collections import defaultdict
 
 from sklearn.model_selection import StratifiedShuffleSplit
-from .nlu_utils import NLUTokenizer
-from .ontology import OntologySystem
+from nlu_utils import NLUTokenizer
+from ontology import OntologySystem
 
 
 def get_entity(s, x, tag):
