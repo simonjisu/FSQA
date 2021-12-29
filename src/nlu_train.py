@@ -20,7 +20,10 @@ data_module = NLUDataModule(
     data_path=data_path / settings['data_file'],
     ids_path=data_path / settings['ids_file'],
     batch_size=settings['batch_size'], 
-    max_len=settings['max_len']
+    max_len=settings['max_len'],
+    test_size=settings['test_size'],
+    num_workers=settings['num_workers'],
+    seed=settings['seed']
 )
 
 with (data_path / settings['ids_file']).open('rb') as file:
