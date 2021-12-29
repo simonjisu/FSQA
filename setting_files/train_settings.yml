@@ -9,8 +9,8 @@ lr: 0.001
 batch_size: 64
 exp_name: 'nlu'
 save_top_k: 2
-refresh_rate: 20
+refresh_rate: 1
 n_gpus: 1
-n_epochs: 7
+n_epochs: 20
 num_sanity_val_steps: 0
 seed: 777
