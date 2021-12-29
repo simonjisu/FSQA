@@ -11,6 +11,6 @@ exp_name: 'nlu'
 save_top_k: 2
 refresh_rate: 20
 n_gpus: 1
-n_epochs: 3
+n_epochs: 7
 num_sanity_val_steps: 0
 seed: 777
