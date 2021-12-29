@@ -147,20 +147,21 @@ class NLUModel(pl.LightningModule):
             'e_subject': e_subject                  # (B, )
         }
         loss = self.cal_loss(outputs, targets)
-        self.log(f'{prefix}loss', loss.item())
+        self.log(f'{prefix}loss', loss, 
+            on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
         # logging
         self.cal_metrics(outputs, targets, prefix=prefix)
         return loss
 
     def cal_loss(self, outputs, targets):
-        has_relation_loss = self.loss['bce'](outputs['has_relation'], targets['tags'].float())
+        has_relation_loss = self.losses['bce'](outputs['has_relation'], targets['tags'].float())
 
-        tags_loss = self.loss['ce'](outputs['tags'], targets['tags'])
-        intent_loss = self.loss['ce'](outputs['intent'], targets['intent'])
-        s_target_loss = self.loss['ce'](outputs['s_target'], targets['s_target'])
-        e_target_loss = self.loss['ce'](outputs['e_target'], targets['e_target'])
-        s_subject_loss = self.loss['ce'](outputs['s_subject'], targets['s_subject'])
-        e_subject_loss = self.loss['ce'](outputs['e_subject'], targets['e_subject'])
+        tags_loss = self.losses['ce'](outputs['tags'], targets['tags'])
+        intent_loss = self.losses['ce'](outputs['intent'], targets['intent'])
+        s_target_loss = self.losses['ce'](outputs['s_target'], targets['s_target'])
+        e_target_loss = self.losses['ce'](outputs['e_target'], targets['e_target'])
+        s_subject_loss = self.losses['ce'](outputs['s_subject'], targets['s_subject'])
+        e_subject_loss = self.losses['ce'](outputs['e_subject'], targets['e_subject'])
 
         return tags_loss + intent_loss + s_target_loss + e_target_loss + s_subject_loss + e_subject_loss + has_relation_loss
 

@@ -13,5 +13,4 @@ refresh_rate: 20
 n_gpus: 1
 n_epochs: 3
 num_sanity_val_steps: 0
-
 seed: 777

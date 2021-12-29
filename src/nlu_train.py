@@ -36,12 +36,13 @@ if __name__ == '__main__':
     intents2id = ids['intents2id']
 
     hparams = {
-        'stage': 'train',
-        'model_path': 'bert-base-uncased', 
+        'stage': settings['stage'],
+        'model_path': settings['model_path'], 
         'intent_size': len(intents2id), 
         'tags_size': len(tags2id), 
         'max_len': settings['max_len'],
         'lr': settings['lr'],
+        'multigpu': True if settings['n_gpus'] > 1 else False
     }
 
     model = NLUModel(**hparams)
