@@ -1,3 +1,10 @@
+db:
+  dbname: 'fsqa'
+  host: 'localhost'
+  user: 'postgres'
+  password: '1234'
+  port: 5432
+
 ontology:
   graph_drawer:
     height: '600px' 
@@ -10,10 +17,3 @@ ontology:
     label_name: 'eng_name'
   model:
     model_name: 'linear_model.pickle'
-
-db:
-  dbname: 'fsqa'
-  host: 'localhost'
-  user: 'postgres'
-  password: ''
-  port: 5432

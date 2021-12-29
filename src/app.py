@@ -40,7 +40,8 @@ def main():
 
     main_path = Path().absolute().parent
     data_path = main_path / 'data'
-    with (main_path / 'src' / 'settings.yml').open('r') as file:
+    setting_path = main_path / 'setting_files'
+    with (setting_path / 'app_settings.yml').open('r') as file:
         settings = yaml.load(file, Loader=yaml.FullLoader)
 
     if selection == 'Demo':

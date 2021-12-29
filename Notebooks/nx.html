@@ -1,0 +1,108 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 100%;
+            height: 600px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"font": {"color": "black"}, "group": 4, "id": "GrossProfit", "label": "Gross Profit", "shape": "dot", "size": 12, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 5, "id": "Revenue", "label": "Revenue", "shape": "dot", "size": 10, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 5, "id": "CostOfSales", "label": "Cost of Sales", "shape": "dot", "size": 10, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 3, "id": "OperatingIncome", "label": "Operating Income", "shape": "dot", "size": 14, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 4, "id": "SellingGeneralAdministrativeExpenses", "label": "Selling General Administrative Expenses", "shape": "dot", "size": 12, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 2, "id": "ProfitBeforeTax", "label": "Profit Before Tax", "shape": "dot", "size": 16, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 3, "id": "FinanceIncome", "label": "Finance Income", "shape": "dot", "size": 14, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 3, "id": "FinancialExpenses", "label": "Financial Expenses", "shape": "dot", "size": 14, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 1, "id": "Profit", "label": "Profit", "shape": "dot", "size": 18, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 2, "id": "IncomeTaxExpense", "label": "IncomeTax Expense", "shape": "dot", "size": 16, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 0, "id": "IncomeStatement", "label": "Income Statement", "shape": "dot", "size": 20, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 98, "id": "CostOfSalesRatio", "label": "Cost of Sales Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 98, "id": "SellingGeneralAdministrativeRatio", "label": "Selling General Administrative Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 98, "id": "SalesAndSellingGeneralAdministrativeRatio", "label": "Sales and Selling General Administrative Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 98, "id": "IncomeTaxRatio", "label": "Income Tax Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 98, "id": "ProfitRatio", "label": "Profit Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 0, "id": "Ratios", "label": "Finance Ratio", "shape": "dot", "size": 20, "title": "Statement: FS Type: Ratio"}]);
+        edges = new vis.DataSet([{"arrows": "to", "from": "GrossProfit", "title": "hasPart", "to": "Revenue", "weight": 2}, {"arrows": "to", "from": "GrossProfit", "title": "hasPart", "to": "CostOfSales", "weight": 2}, {"arrows": "to", "from": "OperatingIncome", "title": "hasPart", "to": "GrossProfit", "weight": 2}, {"arrows": "to", "from": "OperatingIncome", "title": "hasPart", "to": "SellingGeneralAdministrativeExpenses", "weight": 2}, {"arrows": "to", "from": "ProfitBeforeTax", "title": "hasPart", "to": "OperatingIncome", "weight": 2}, {"arrows": "to", "from": "ProfitBeforeTax", "title": "hasPart", "to": "FinanceIncome", "weight": 2}, {"arrows": "to", "from": "ProfitBeforeTax", "title": "hasPart", "to": "FinancialExpenses", "weight": 2}, {"arrows": "to", "from": "Profit", "title": "hasPart", "to": "ProfitBeforeTax", "weight": 2}, {"arrows": "to", "from": "Profit", "title": "hasPart", "to": "IncomeTaxExpense", "weight": 2}, {"arrows": "to", "from": "IncomeStatement", "title": "hasPart", "to": "Profit", "weight": 2}, {"arrows": "to", "from": "CostOfSalesRatio", "title": "isDenominatorOf", "to": "Revenue", "weight": 2}, {"arrows": "to", "from": "CostOfSalesRatio", "title": "isNumeratorOf", "to": "CostOfSales", "weight": 2}, {"arrows": "to", "from": "SellingGeneralAdministrativeRatio", "title": "isDenominatorOf", "to": "Revenue", "weight": 2}, {"arrows": "to", "from": "SellingGeneralAdministrativeRatio", "title": "isNumeratorOf", "to": "SellingGeneralAdministrativeExpenses", "weight": 2}, {"arrows": "to", "from": "SalesAndSellingGeneralAdministrativeRatio", "title": "hasPart", "to": "CostOfSalesRatio", "weight": 2}, {"arrows": "to", "from": "SalesAndSellingGeneralAdministrativeRatio", "title": "hasPart", "to": "SellingGeneralAdministrativeRatio", "weight": 2}, {"arrows": "to", "from": "IncomeTaxRatio", "title": "isDenominatorOf", "to": "ProfitBeforeTax", "weight": 2}, {"arrows": "to", "from": "IncomeTaxRatio", "title": "isNumeratorOf", "to": "IncomeTaxExpense", "weight": 2}, {"arrows": "to", "from": "ProfitRatio", "title": "isDenominatorOf", "to": "Revenue", "weight": 2}, {"arrows": "to", "from": "ProfitRatio", "title": "isNumeratorOf", "to": "Profit", "weight": 2}, {"arrows": "to", "from": "Ratios", "title": "hasPart", "to": "CostOfSalesRatio", "weight": 2}, {"arrows": "to", "from": "Ratios", "title": "hasPart", "to": "SellingGeneralAdministrativeRatio", "weight": 2}, {"arrows": "to", "from": "Ratios", "title": "hasPart", "to": "SalesAndSellingGeneralAdministrativeRatio", "weight": 2}, {"arrows": "to", "from": "Ratios", "title": "hasPart", "to": "IncomeTaxRatio", "weight": 2}, {"arrows": "to", "from": "Ratios", "title": "hasPart", "to": "ProfitRatio", "weight": 2}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pyvis.network import Network
 from collections import defaultdict
-from embeddedML import LinearRegression
+from .embeddedML import LinearRegression
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -40,23 +40,24 @@ class SparqlHandler():
 
     def get_predefined_knowledge(self, knowledge:str):
         # BS, IS, BSR, ISR
+        # TODO: 일부 노드 없음(balance sheet 에서 ratio의 분모인 sales )
         knowledge_queries = dict(
             BS="""
             SELECT ?s ?p ?o WHERE { 
             VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShorttermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:TotalEquity 
+            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:Ratios acc:CalendarOneYear }
+            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
             VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShorttermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:TotalEquity 
+            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:Ratios acc:CalendarOneYear }
+            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
             VALUES ?p { acc:partOf acc:denominator acc:numerator } 
             ?s ?p ?o .
             }
@@ -93,18 +94,18 @@ class SparqlHandler():
             SELECT ?s ?p ?o WHERE { 
             VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShorttermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:TotalEquity 
+            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:Ratios acc:CalendarOneYear }
+            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
             VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShorttermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:TotalEquity 
+            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:Ratios acc:CalendarOneYear }
+            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
             VALUES ?p { acc:hasPart acc:isDenominatorOf acc:isNumeratorOf } 
             ?s ?p ?o .
             }
@@ -248,9 +249,9 @@ class OntologySystem():
             self.ACC_DICT[acc]['kor_name'] = kor
             self.ACC_DICT[acc]['eng_name'] = eng
             self.ACC_DICT[acc]['group'] = group
-        self.ACC_DICT['CalendarOneYear']['eng_name'] = '365 days'
-        self.ACC_DICT['CalendarOneYear']['kor_name'] = '365 일'
-        self.ACC_DICT['CalendarOneYear']['group'] = 99
+        # self.ACC_DICT['CalendarOneYear']['eng_name'] = '365 days'
+        # self.ACC_DICT['CalendarOneYear']['kor_name'] = '365 일'
+        # self.ACC_DICT['CalendarOneYear']['group'] = 'TIME-Value-99'
         
         query_statement = """
         SELECT ?s ?p ?literal 
@@ -280,6 +281,7 @@ class OntologySystem():
 
     def get_SQL(self, sparql_results, account, quarter, year, sub_account=None): 
         # sub_account: {acc_name: ('*', 1.1)}
+        # TODO: ratio accounts should apply some functions
         sparql_results = list(map(lambda x: tuple(self.graph_drawer.convert_to_string(acc) for acc in x), list(sparql_results)))
         role_dict = defaultdict(list)
         for s, p, o in sparql_results:

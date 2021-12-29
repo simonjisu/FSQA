@@ -7,7 +7,7 @@ Inventories,재고자산,Inventories,BS-Value-4
 NoncurrentAssets,비유동자산,Noncurrent Assets,BS-Value-3
 PropertyPlantAndEquipment,유형자산,Property Plant and Equipment,BS-Value-4
 IntangibleAssets,무형자산,Intangible Assets,BS-Value-4
-AssetsAbstract,자산총계,Assets Abstract,BS-Value-1
+AssetsAbstract,자산총계,Assets,BS-Value-1
 CurrentLiabilities,유동부채,Current Liabilities,BS-Value-3
 TradeAndOtherCurrentPayables,매입채무 및 기타유동채무,Trade and Other Current Payables,BS-Value-4
 ShortTermBorrowings,단기차입금,Short Term Borrowings,BS-Value-4
@@ -15,8 +15,8 @@ AdvancesCustomers,선수금,Advances Customers,BS-Value-4
 NoncurrentLiabilities,비유동부채,Noncurrent Liabilities,BS-Value-3
 BondsIssued,사채,Bonds Issued,BS-Value-4
 LongTermBorrowings,장기차입금,Long Term Borrowings,BS-Value-4
-LiabilitiesAbstract,부채총계,Liabilities Abstract,BS-Value-2
-TotalEquity,자본총계,Total Equity,BS-Value-2
+LiabilitiesAbstract,부채총계,Liabilities,BS-Value-2
+EquitiesAbstract,자본총계,Equities,BS-Value-2
 LiabilitiesAndEquities,부채와자본총계,Liabilities and Equities,BS-Value-1
 TradeReceivableTurnoverPeriod,매출채권 회전기간,Trade Receivable Turnover Period,BS-Ratio-98
 PrepaidExpensesTurnoverPeriod,선급비용 회전기간,Prepaid Expenses Turnover Period,BS-Ratio-98
@@ -40,3 +40,5 @@ IncomeTaxRatio,법인세율,Income Tax Ratio,IS-Ratio-98
 ProfitRatio,순이익율,Profit Ratio,IS-Ratio-98
 IncomeStatement,손익계산서,Income Statement,IS-Value-0
 BalanceSheet,재무상태표,Balance Sheet,BS-Value-0
+CalendarOneYear,365 일,365 days,TIME-Value-99
+Ratios,재무비율,Finance Ratio,FS-Ratio-0

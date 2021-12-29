@@ -123,13 +123,13 @@ acc:LiabilitiesAbstract,rdfs:label,부채총계
 acc:LiabilitiesAbstract,acc:Account_Belonging,acc:BalanceSheet
 acc:LiabilitiesAbstract,acc:Account_Property,Positive
 acc:LiabilitiesAbstract,acc:Account_Level,2
-acc:TotalEquity,rdf:type,acc:Account
-acc:TotalEquity,acc:partOf,acc:LiabilitiesAndEquities
-acc:TotalEquity,acc:Account_Type,Value
-acc:TotalEquity,rdfs:label,자본총계
-acc:TotalEquity,acc:Account_Belonging,acc:BalanceSheet
-acc:TotalEquity,acc:Account_Property,Positive
-acc:TotalEquity,acc:Account_Level,2
+acc:EquitiesAbstract,rdf:type,acc:Account
+acc:EquitiesAbstract,acc:partOf,acc:LiabilitiesAndEquities
+acc:EquitiesAbstract,acc:Account_Type,Value
+acc:EquitiesAbstract,rdfs:label,자본총계
+acc:EquitiesAbstract,acc:Account_Belonging,acc:BalanceSheet
+acc:EquitiesAbstract,acc:Account_Property,Positive
+acc:EquitiesAbstract,acc:Account_Level,2
 acc:LiabilitiesAndEquities,rdf:type,acc:Account
 acc:LiabilitiesAndEquities,acc:partOf,acc:BalanceSheet
 acc:LiabilitiesAndEquities,acc:Account_Type,Value
@@ -226,35 +226,42 @@ acc:Profit,acc:Account_Property,Positive
 acc:Profit,acc:Account_Level,1
 acc:Profit,acc:numerator,acc:ProfitRatio
 acc:TradeReceivableTurnoverPeriod,rdf:type,acc:Account
+acc:TradeReceivableTurnoverPeriod,acc:partOf,acc:Ratios
 acc:TradeReceivableTurnoverPeriod,acc:Account_Type,Ratio
 acc:TradeReceivableTurnoverPeriod,rdfs:label,매출채권 회전기간
 acc:TradeReceivableTurnoverPeriod,acc:Account_Belonging,acc:Ratios
 acc:TradeReceivableTurnoverPeriod,acc:Account_Property,Positive
+acc:TradeReceivableTurnoverPeriod,acc:Account_Level,98
 acc:PrepaidExpensesTurnoverPeriod,rdf:type,acc:Account
+acc:PrepaidExpensesTurnoverPeriod,acc:partOf,acc:Ratios
 acc:PrepaidExpensesTurnoverPeriod,acc:Account_Type,Ratio
 acc:PrepaidExpensesTurnoverPeriod,rdfs:label,선급비용 회전기간
 acc:PrepaidExpensesTurnoverPeriod,acc:Account_Belonging,acc:Ratios
 acc:PrepaidExpensesTurnoverPeriod,acc:Account_Property,Positive
 acc:PrepaidExpensesTurnoverPeriod,acc:Account_Level,98
 acc:InventoriesTurnoverPeriod,rdf:type,acc:Account
+acc:InventoriesTurnoverPeriod,acc:partOf,acc:Ratios
 acc:InventoriesTurnoverPeriod,acc:Account_Type,Ratio
 acc:InventoriesTurnoverPeriod,rdfs:label,재고자산 회전기간
 acc:InventoriesTurnoverPeriod,acc:Account_Belonging,acc:Ratios
 acc:InventoriesTurnoverPeriod,acc:Account_Property,Positive
 acc:InventoriesTurnoverPeriod,acc:Account_Level,98
 acc:TradePayablesTurnoverPeriod,rdf:type,acc:Account
+acc:TradePayablesTurnoverPeriod,acc:partOf,acc:Ratios
 acc:TradePayablesTurnoverPeriod,acc:Account_Type,Ratio
 acc:TradePayablesTurnoverPeriod,rdfs:label,매입채무 회전기간
 acc:TradePayablesTurnoverPeriod,acc:Account_Belonging,acc:Ratios
 acc:TradePayablesTurnoverPeriod,acc:Account_Property,Positive
 acc:TradePayablesTurnoverPeriod,acc:Account_Level,98
 acc:AdvancesCustomersTurnoverPeriod,rdf:type,acc:Account
+acc:AdvancesCustomersTurnoverPeriod,acc:partOf,acc:Ratios
 acc:AdvancesCustomersTurnoverPeriod,acc:Account_Type,Ratio
 acc:AdvancesCustomersTurnoverPeriod,rdfs:label,선수금 회전기간
 acc:AdvancesCustomersTurnoverPeriod,acc:Account_Belonging,acc:Ratios
 acc:AdvancesCustomersTurnoverPeriod,acc:Account_Property,Positive
 acc:AdvancesCustomersTurnoverPeriod,acc:Account_Level,98
 acc:CostOfSalesRatio,rdf:type,acc:Account
+acc:CostOfSalesRatio,acc:partOf,acc:Ratios
 acc:CostOfSalesRatio,acc:Account_Type,Ratio
 acc:CostOfSalesRatio,rdfs:label,매출원가율
 acc:CostOfSalesRatio,acc:Account_Belonging,acc:Ratios
@@ -262,6 +269,7 @@ acc:CostOfSalesRatio,acc:Account_Property,Positive
 acc:CostOfSalesRatio,acc:partOf,acc:SalesAndSellingGeneralAdministrativeRatio
 acc:CostOfSalesRatio,acc:Account_Level,98
 acc:SellingGeneralAdministrativeRatio,rdf:type,acc:Account
+acc:SellingGeneralAdministrativeRatio,acc:partOf,acc:Ratios
 acc:SellingGeneralAdministrativeRatio,acc:Account_Type,Ratio
 acc:SellingGeneralAdministrativeRatio,rdfs:label,판관비율
 acc:SellingGeneralAdministrativeRatio,acc:Account_Belonging,acc:Ratios
@@ -269,18 +277,21 @@ acc:SellingGeneralAdministrativeRatio,acc:Account_Property,Positive
 acc:SellingGeneralAdministrativeRatio,acc:partOf,acc:SalesAndSellingGeneralAdministrativeRatio
 acc:SellingGeneralAdministrativeRatio,acc:Account_Level,98
 acc:SalesAndSellingGeneralAdministrativeRatio,rdf:type,acc:Account
+acc:SalesAndSellingGeneralAdministrativeRatio,acc:partOf,acc:Ratios
 acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Type,Ratio
 acc:SalesAndSellingGeneralAdministrativeRatio,rdfs:label,매출 및 판관 비율
 acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Belonging,acc:Ratios
 acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Property,Positive
 acc:SalesAndSellingGeneralAdministrativeRatio,acc:Account_Level,98
 acc:IncomeTaxRatio,rdf:type,acc:Account
+acc:IncomeTaxRatio,acc:partOf,acc:Ratios
 acc:IncomeTaxRatio,acc:Account_Type,Ratio
 acc:IncomeTaxRatio,rdfs:label,법인세율
 acc:IncomeTaxRatio,acc:Account_Belonging,acc:Ratios
 acc:IncomeTaxRatio,acc:Account_Property,Positive
 acc:IncomeTaxRatio,acc:Account_Level,98
 acc:ProfitRatio,rdf:type,acc:Account
+acc:ProfitRatio,acc:partOf,acc:Ratios
 acc:ProfitRatio,acc:Account_Type,Ratio
 acc:ProfitRatio,rdfs:label,순이익율
 acc:ProfitRatio,acc:Account_Belonging,acc:Ratios
@@ -310,7 +321,11 @@ acc:addition,rdf:type,acc:MathFunction
 acc:division,rdf:type,acc:MathFunction
 acc:partOf,rdf:type,acc:Relation
 acc:partOf,rdfs:label,partOf
-acc:Ratios,rdf:type,rdfs:Class
+acc:Ratios,rdf:type,acc:Account
+acc:Ratios,acc:Account_Type,Ratio
+acc:Ratios,rdfs:label,재무비율
+acc:Ratios,acc:Account_Belonging,acc:FinancialStatement
+acc:Ratios,acc:Account_Level,0
 acc:IncomeStatement,rdf:type,rdfs:Class
 acc:BalanceSheet,rdf:type,rdfs:Class
 acc:MathFunction,rdf:type,rdfs:Class
@@ -344,7 +359,7 @@ acc:LiabilitiesAbstract,acc:hasPart,acc:NoncurrentLiabilities
 acc:NoncurrentLiabilities,acc:hasPart,acc:BondsIssued
 acc:NoncurrentLiabilities,acc:hasPart,acc:LongTermBorrowings
 acc:LiabilitiesAndEquities,acc:hasPart,acc:LiabilitiesAbstract
-acc:LiabilitiesAndEquities,acc:hasPart,acc:TotalEquity
+acc:LiabilitiesAndEquities,acc:hasPart,acc:EquitiesAbstract
 acc:BalanceSheet,acc:hasPart,acc:LiabilitiesAndEquities
 acc:GrossProfit,acc:hasPart,acc:Revenue
 acc:TradeReceivableTurnoverPeriod,acc:isDenominatorOf,acc:Revenue
@@ -378,3 +393,13 @@ acc:TradePayablesTurnoverPeriod,acc:isNumeratorOf,acc:CalendarOneYear
 acc:AdvancesCustomersTurnoverPeriod,acc:isNumeratorOf,acc:CalendarOneYear
 acc:division,acc:hasPart,acc:denominator
 acc:division,acc:hasPart,acc:numerator
+acc:Ratios,acc:hasPart,acc:TradeReceivableTurnoverPeriod
+acc:Ratios,acc:hasPart,acc:PrepaidExpensesTurnoverPeriod
+acc:Ratios,acc:hasPart,acc:InventoriesTurnoverPeriod
+acc:Ratios,acc:hasPart,acc:TradePayablesTurnoverPeriod
+acc:Ratios,acc:hasPart,acc:AdvancesCustomersTurnoverPeriod
+acc:Ratios,acc:hasPart,acc:CostOfSalesRatio
+acc:Ratios,acc:hasPart,acc:SellingGeneralAdministrativeRatio
+acc:Ratios,acc:hasPart,acc:SalesAndSellingGeneralAdministrativeRatio
+acc:Ratios,acc:hasPart,acc:IncomeTaxRatio
+acc:Ratios,acc:hasPart,acc:ProfitRatio

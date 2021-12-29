@@ -1,0 +1,13 @@
+stage: 'train'
+model_path: 'bert-base-uncased'
+data_file: 'all_data_splitted.pickle'
+ids_file: 'all_data_ids.pickle'
+max_len: 64
+lr: 0.001
+batch_size: 64
+exp_name: 'nlu'
+save_top_k: 2
+refresh_rate: 20
+n_gpus: 1
+n_epochs: 3
+num_sanity_val_steps: 2
