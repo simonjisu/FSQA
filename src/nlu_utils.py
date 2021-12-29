@@ -170,8 +170,8 @@ class NLUDataModule(pl.LightningDataModule):
         self.test_size = test_size
         self.seed = seed
         self.num_workers = num_workers
-
-    def prepare_data(self):
+        
+    def load_data(self):
         with Path(self.data_path).open('rb') as file:
             data = pickle.load(file)
         
@@ -182,6 +182,9 @@ class NLUDataModule(pl.LightningDataModule):
         self.test_data = data['test']
         self.tags2id = ids['tags2id']
         self.intents2id = ids['intents2id']
+
+    def prepare_data(self):
+        self.load_data()
 
     def train_dataloader(self):
         train_dataset = NLUDataset(

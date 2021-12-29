@@ -58,25 +58,16 @@ class NLUModel(pl.LightningModule):
                 'ce': nn.CrossEntropyLoss()
             }
             # metrics
-            self.metrics = {
+            self.metrics = nn.ModuleDict({
                 'train_': self.create_metrics(prefix='train_'),
                 'val_': self.create_metrics(prefix='val_')
-            }
+            })
     def contiguous(self, x):
-        return x.squeeze(-1).contiguous()
+        return x.squeeze(-1).contiguous().type_as(x)
 
     def create_metrics(self, prefix='train_'):
-        m = dict()
+        m = nn.ModuleDict()
         metrics = torchmetrics.MetricCollection([torchmetrics.Accuracy(), torchmetrics.Precision(), torchmetrics.Recall()])
-        # num_classes = {
-        #     'intent': self.hparams.intent_size, 
-        #     'tags': self.hparams.tags_size,
-        #     'has_relation': 2,
-        #     's_target': self.hparams.max_len,
-        #     'e_target': self.hparams.max_len, 
-        #     's_subject': self.hparams.max_len, 
-        #     'e_subject': self.hparams.max_len
-        # }
         for k in self.outputs_keys:
             m[k] = metrics.clone(prefix+k+'_')
         return m
