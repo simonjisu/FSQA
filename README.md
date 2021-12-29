@@ -10,5 +10,5 @@ Financial Statements Question and Answering
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
-python -m spacy download en_core_web_trf
+# python -m spacy download en_core_web_trf
 ```

@@ -116,6 +116,19 @@ class SparqlHandler():
         )
         return knowledge_queries[knowledge]
 
+def random_sampling(x_dict, x_key):
+    idx_range = np.arange(len(x_dict[x_key]))
+    idx = np.random.choice(idx_range, replace=False, p=np.ones(len(idx_range)) / len(idx_range))
+    word, tag, desc = x_dict[x_key][idx]
+    return word, tag, desc
+
+def get_words_filtered(words, text):
+    words_filtered = defaultdict(list)
+    for k, v in words.items():
+        for word, tag, desc in v:
+            if desc != text:
+                words_filtered[k].append((word, tag, desc))
+    return words_filtered
 
 def convert_to_string(x):
         if isinstance(x, URIRef):
@@ -219,43 +232,60 @@ def create_data():
     
 
     # ----------------------------------------- target scenario: 1 ------------------------------------------------
+    data1 = []
     trg_scenario = 1
     progress_bar = tqdm()
-    for fmt in format_dict[trg_scenario]:
+    words_filtered = get_words_filtered(words, text='FUTURE')
+    for idx_fmt, fmt in enumerate(format_dict[trg_scenario]):
         for acc, dic in ACC_DICT.items():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
             knowledge, *_ = dic['group'].split('-')
-            for t in times:
-                for t_word, t_tag, t_desc in words[t]:
-                    if t_desc != 'FUTURE':  # only add not future word in first scenario
-                        entities = []
 
+            for t in ['year', 'quarter']:
+                for t_word, t_tag, _ in words_filtered[t]:
+                    entities = []
+                    pre_token = np.random.choice(['what', 'how'], replace=False, p=np.ones(2)/2)
+                    if idx_fmt == 0:
+                        # what/how, target_account, [MASK] + year/quarter
+                        # "{} is the {} in the {}?",
+                        
                         s = fmt.format(
-                            np.random.choice(['what', 'how']),
+                            pre_token,
                             f_ENT(target_account), 
                             f_ENT(f'{t_word} {t}')
                             )
-                        relation = [0, 0, 0]  # no_relation, order1, order2
-                        # entities
-                        ## target_account
-                        entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
-                        ## MASK year/quarter
-                        entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
-                        
-                        all_data.append(
-                            {'question': s, 'entities': entities, 'intent': 'PAST.value', 'relation': relation}
+                    else:
+                        # [MASK] + year/quarter, what/how, target_account
+                        # "In the {}, {} is the value of the {}"
+                        s = fmt.format(
+                            f_ENT(f'{t_word} {t}'),
+                            pre_token,
+                            f_ENT(target_account)
                         )
-                        
-                        progress_bar.update(1)
-
+                    relation = [0, 0, 0]  # no_relation, order1, order2
+                    # entities
+                    ## target_account
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
+                    ## MASK year/quarter
+                    entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
+                    
+                    data1.append(
+                        {'question': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'PAST.value', 'relation': relation}
+                    )
+                
+                    progress_bar.update(1)
     
     # ----------------------------------------- target scenario: 2 ------------------------------------------------
     trg_scenario = 2
     bs_successors = get_successor(sparql, 'BS', exceptions)
     is_successors = get_successor(sparql, 'IS', exceptions)
+    data2 = []
+    n_sample = 5
     progress_bar = tqdm()
+    words_filtered = get_words_filtered(words, text='FUTURE')
+
     for idx_fmt, fmt in enumerate(format_dict[trg_scenario]):
         for sub_tree in [bs_successors, is_successors]:
             for trg_acc, successors in sub_tree.items():
@@ -266,82 +296,94 @@ def create_data():
                 for sub_acc in successors:
                     subject_account = ACC_DICT[sub_acc]['eng_name'].lower()
                     subject_knowledge, *_ = ACC_DICT[trg_acc]['group'].split('-')
-                    for apply_word, apply_tag, apply_desc in words['words']:
-                        for t in times:
-                            for t_word, t_tag, t_desc in words[t]:
-                                if t_desc != 'FUTURE':  # only add not future word in second scenario
-                                    entities = []
-                                    number = np.random.randint(1, 99)
-                                    percent = np.random.choice(['percent', '%'])
-                                    
-                                    if idx_fmt in [0, 1]:
-                                        # target_account, subject_account, [MASK], random_number + percent/%, [MASK] + year/quarter
-                                        s = fmt.format(
-                                            f_ENT(target_account), 
-                                            f_ENT(subject_account), 
-                                            f_ENT(apply_word), 
-                                            f_ENT(f'{number} {percent}'),
-                                            f_ENT(f'{t_word} {t}')
-                                            )
-                                        relation = [1, 1, 2]
-                                    else:
-                                        # subject_account, [MASK], random_number + percent/%, [MASK] + year/quarter, target_account
-                                        s = fmt.format(
-                                            f_ENT(subject_account), 
-                                            f_ENT(apply_word), 
-                                            f_ENT(f'{number} {percent}'),
-                                            f_ENT(f'{t_word} {t}'),
-                                            f_ENT(target_account)
-                                            )
-                                        relation = [1, 2, 1]
-                                    # entities
-                                    ## target_account
-                                    entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{trg_acc}'))
-                                    ## subject_account
-                                    entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{sub_acc}'))
-                                    ## MASK apply words
-                                    entities.append(get_entity(s, f_ENT(apply_word), apply_tag))
-                                    ## percentages
-                                    entities.append(get_entity(s, f_ENT(f'{number} {percent}'), 'PERCENT'))
-                                    ## MASK year/quarter
-                                    entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
+                    n = 0
+                    while n < n_sample:
+                        entities = []
+
+                        apply_word, apply_tag, _ = random_sampling(x_dict=words_filtered, x_key='words')
+                        t = np.random.choice(times, replace=False, p=np.ones(len(times))/len(times))
+                        t_word, t_tag, _ = random_sampling(x_dict=words_filtered, x_key=t)
                         
-                                    all_data.append(
-                                        {'question': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'IF.fact', 'relation': relation}
-                                    )
-                                    
-                                    progress_bar.update(1)
+                        number = np.random.randint(1, 99)
+                        percent = np.random.choice(['percent', '%'], replace=False, p=np.ones(2)/2)
+                        
+                        if idx_fmt in [0, 1]:
+                            # target_account, subject_account, [MASK], random_number + percent/%, [MASK] + year/quarter
+                            s = fmt.format(
+                                f_ENT(target_account),
+                                f_ENT(subject_account), 
+                                f_ENT(apply_word), 
+                                f_ENT(f'{number} {percent}'),
+                                f_ENT(f'{t_word} {t}')
+                                )
+                            relation = [1, 1, 2]
+                        else:
+                            # subject_account, [MASK], random_number + percent/%, [MASK] + year/quarter, target_account
+                            s = fmt.format(
+                                f_ENT(subject_account), 
+                                f_ENT(apply_word), 
+                                f_ENT(f'{number} {percent}'),
+                                f_ENT(f'{t_word} {t}'),
+                                f_ENT(target_account)
+                                )
+                            relation = [1, 2, 1]
+                        # entities
+                        ## target_account
+                        entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{trg_acc}'))
+                        ## subject_account
+                        entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{sub_acc}'))
+                        ## MASK apply words
+                        entities.append(get_entity(s, f_ENT(apply_word), apply_tag))
+                        ## percentages
+                        entities.append(get_entity(s, f_ENT(f'{number} {percent}'), 'PERCENT'))
+                        ## MASK year/quarter
+                        entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
+
+                        d = {'question': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'IF.fact', 'relation': relation}
+                        if d not in data2:
+                            data2.append(
+                                d
+                            )
+                        
+                        progress_bar.update(1)
+                        n += 1
+
+    print(len(data2))
 
     # ----------------------------------------- target scenario: 3 ------------------------------------------------
+    data3 = []
     trg_scenario = 3
     progress_bar = tqdm()
+    words_filtered = get_words_filtered(words, text='PAST')
+
     for fmt in format_dict[trg_scenario]:
         for acc, dic in ACC_DICT.items():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
             knowledge, *_ = dic['group'].split('-')
-            for t in times:
-                for t_word, t_tag, t_desc in words[t]:
-                    if t_desc != 'PAST':  # only add not past word in third scenario
-                        entities = []
-                        s = fmt.format(
-                            np.random.choice(['what', 'how']), 
-                            f_ENT(target_account), 
-                            f_ENT(f'{t_word} {t}')
-                            )
-                        relation = [0, 0, 0]
-                        # entities
-                        ## target_account
-                        entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
-                        ## MASK year/quarter
-                        entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
-                        
-                        all_data.append(
-                            {'question': s, 'entities': entities, 'intent': 'IF.forecast', 'relation': relation}
+            for t in ['year', 'quarter']:
+                for t_word, t_tag, _ in words_filtered[t]:
+                    entities = []
+                    s = fmt.format(
+                        np.random.choice(['what', 'how']), 
+                        f_ENT(target_account), 
+                        f_ENT(f'{t_word} {t}')
                         )
-                        
-                        progress_bar.update(1)
+                    relation = [0, 0, 0]
+                    # entities
+                    ## target_account
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
+                    ## MASK year/quarter
+                    entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
+                    
+                    data3.append(
+                        {'question': s, 'entities': entities, 'intent': 'IF.forecast', 'relation': relation}
+                    )
+                    
+                    progress_bar.update(1)
+
+    all_data = data1 + data2 + data3
     return all_data
 
 def post_process(all_data):
