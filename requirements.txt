@@ -17,3 +17,4 @@ statsmodels
 sqlparse
 spacy-streamlit
 torchmetrics
+pytorch_lightning

@@ -10,19 +10,19 @@ from collections import defaultdict
 
 from sklearn.model_selection import StratifiedShuffleSplit
 from nlu_utils import NLUTokenizer
-from ontology import OntologySystem
+from ontology import SparqlHandler, GraphDrawer
 
 
 def get_entity(s, x, tag):
     idx = s.index(x)
     return (idx, idx+len(x), tag)
 
-def get_role_dict(onto, knowledge):
-    knowledge_query = onto.sparql.get_predefined_knowledge(knowledge=knowledge)
-    sparql_results = onto.sparql.query(knowledge_query)
+def get_role_dict(sparql, knowledge):
+    knowledge_query = sparql.get_predefined_knowledge(knowledge=knowledge)
+    sparql_results = sparql.query(knowledge_query)
     role_dict = defaultdict(list)
     for s, p, o in sparql_results:
-        s, p, o = map(onto.graph_drawer.convert_to_string, [s, p, o])
+        s, p, o = map(GraphDrawer.convert_to_string, [s, p, o])
         if s == 'CalendarOneYear' or o == 'CalendarOneYear':
             continue
         if s not in role_dict[o]:
@@ -51,16 +51,18 @@ def get_successor(onto, knowledge, exceptions=None):
     return successors
 
 def create_data():
-    with (settings_path / 'app_settings.yml').open('r') as file:
-        app_settings = yaml.load(file, Loader=yaml.FullLoader)
+    sparql = SparqlHandler(data_path / 'AccountRDF.xml')
 
-    onto = OntologySystem(
-        acc_name_path=data_path / 'AccountName.csv', 
-        rdf_path=data_path / 'AccountRDF.xml',
-        model_path=data_path / app_settings['ontology']['model']['model_name'],
-        kwargs_graph_drawer=app_settings['ontology']['graph_drawer']
-    )
-
+    df_account = pd.read_csv(data_path / 'AccountName.csv', encoding='utf-8')
+    ACC_DICT = defaultdict(dict)
+    for _, row in df_account.iterrows():
+        acc = row['acc']
+        eng = row['acc_name_eng']
+        kor = row['acc_name_kor']
+        group = row['group']
+        ACC_DICT[acc]['kor_name'] = kor
+        ACC_DICT[acc]['eng_name'] = eng
+        ACC_DICT[acc]['group'] = group
 
     # don't need to define the future but past words cannot use in future
     df = pd.read_csv(data_path / 'AccountWords.csv', encoding='utf-8')
@@ -105,7 +107,7 @@ def create_data():
     trg_scenario = 1
     progress_bar = tqdm()
     for fmt in format_dict[trg_scenario]:
-        for acc, dic in onto.ACC_DICT.items():
+        for acc, dic in ACC_DICT.items():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
@@ -136,19 +138,19 @@ def create_data():
     
     # ----------------------------------------- target scenario: 2 ------------------------------------------------
     trg_scenario = 2
-    bs_successors = get_successor(onto, 'BS', exceptions)
-    is_successors = get_successor(onto, 'IS', exceptions)
+    bs_successors = get_successor(sparql, 'BS', exceptions)
+    is_successors = get_successor(sparql, 'IS', exceptions)
     progress_bar = tqdm()
     for idx_fmt, fmt in enumerate(format_dict[trg_scenario]):
         for sub_tree in [bs_successors, is_successors]:
             for trg_acc, successors in sub_tree.items():
                 if trg_acc in exceptions:
                     continue
-                target_account = onto.ACC_DICT[trg_acc]['eng_name'].lower()
-                target_knowledge, *_ = onto.ACC_DICT[trg_acc]['group'].split('-')
+                target_account = ACC_DICT[trg_acc]['eng_name'].lower()
+                target_knowledge, *_ = ACC_DICT[trg_acc]['group'].split('-')
                 for sub_acc in successors:
-                    subject_account = onto.ACC_DICT[sub_acc]['eng_name'].lower()
-                    subject_knowledge, *_ = onto.ACC_DICT[trg_acc]['group'].split('-')
+                    subject_account = ACC_DICT[sub_acc]['eng_name'].lower()
+                    subject_knowledge, *_ = ACC_DICT[trg_acc]['group'].split('-')
                     for apply_word, apply_tag, apply_desc in words['words']:
                         for t in times:
                             for t_word, t_tag, t_desc in words[t]:
@@ -199,7 +201,7 @@ def create_data():
     trg_scenario = 3
     progress_bar = tqdm()
     for fmt in format_dict[trg_scenario]:
-        for acc, dic in onto.ACC_DICT.items():
+        for acc, dic in ACC_DICT.items():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
