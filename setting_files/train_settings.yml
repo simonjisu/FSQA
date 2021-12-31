@@ -1,9 +1,10 @@
 stage: 'train'
 model_path: 'bert-base-uncased'
-data_file: 'all_data_splitted.pickle'
-ids_file: 'all_data_ids.pickle'
+train_file: 'all_data_train.jsonl'
+valid_file: 'all_data_valid.jsonl'
+test_file: 'all_data_test.jsonl'
+labels_file: 'labels.json'
 num_workers: 0
-test_size: 0.1
 max_len: 64
 lr: 0.001
 batch_size: 64
@@ -11,6 +12,6 @@ exp_name: 'nlu'
 save_top_k: 2
 refresh_rate: 1
 n_gpus: 1
-n_epochs: 20
+n_epochs: 10
 num_sanity_val_steps: 0
 seed: 777

@@ -9,7 +9,6 @@ from pathlib import Path
 from nlu_models import NLUModel
 from nlu_utils import NLUDataModule
 
-
 if __name__ == '__main__':
     freeze_support()
     main_path = Path().absolute().parent
@@ -20,26 +19,21 @@ if __name__ == '__main__':
         settings = yaml.load(file, Loader=yaml.FullLoader)
 
     data_module = NLUDataModule(
-        data_path=data_path / settings['data_file'],
-        ids_path=data_path / settings['ids_file'],
+        train_path=data_path / settings['train_file'], 
+        valid_path=data_path / settings['valid_file'],
+        test_path=data_path / settings['test_file'],
+        labels_path=data_path / settings['labels_file'],
         batch_size=settings['batch_size'], 
         max_len=settings['max_len'],
-        test_size=settings['test_size'],
         num_workers=settings['num_workers'],
         seed=settings['seed']
     )
 
-    with (data_path / settings['ids_file']).open('rb') as file:
-        ids = pickle.load(file)
-
-    tags2id = ids['tags2id']
-    intents2id = ids['intents2id']
-
     hparams = {
         'stage': settings['stage'],
         'model_path': settings['model_path'], 
-        'intent_size': len(intents2id), 
-        'tags_size': len(tags2id), 
+        'intent_size': len(data_module.intents2id), 
+        'tags_size': len(data_module.tags2id), 
         'max_len': settings['max_len'],
         'lr': settings['lr'],
         'multigpu': True if settings['n_gpus'] > 1 else False
@@ -48,7 +42,7 @@ if __name__ == '__main__':
     model = NLUModel(**hparams)
 
     log_path = main_path / 'logs'
-    checkpoint_path = main_path / 'checkpoints'
+    checkpoint_path = main_path / 'checkpoints' / settings['exp_name']
 
     logger = TensorBoardLogger(save_dir=str(log_path), name=settings['exp_name'])
 

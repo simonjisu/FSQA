@@ -10,6 +10,9 @@ from collections import defaultdict
 from sklearn.model_selection import StratifiedShuffleSplit
 from nlu_utils import NLUTokenizer
 from rdflib import Graph, Literal, URIRef
+from spacy.training import biluo_tags_to_offsets, iob_to_biluo
+from datasets import load_dataset
+
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -230,18 +233,18 @@ def create_data():
 
     all_data = []
     
-
     # ----------------------------------------- target scenario: 1 ------------------------------------------------
     data1 = []
     trg_scenario = 1
     progress_bar = tqdm()
     words_filtered = get_words_filtered(words, text='FUTURE')
     for idx_fmt, fmt in enumerate(format_dict[trg_scenario]):
+        
         for acc, dic in ACC_DICT.items():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
-            knowledge, *_ = dic['group'].split('-')
+            knowledge, acc_type, _ = dic['group'].split('-')
 
             for t in ['year', 'quarter']:
                 for t_word, t_tag, _ in words_filtered[t]:
@@ -264,15 +267,15 @@ def create_data():
                             pre_token,
                             f_ENT(target_account)
                         )
-                    relation = [0, 0, 0]  # no_relation, order1, order2
+                    # relation = [0, 0, 0]  # no_relation, order1, order2
                     # entities
                     ## target_account
-                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
                     ## MASK year/quarter
                     entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
                     
                     data1.append(
-                        {'question': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'PAST.value', 'relation': relation}
+                        {'text': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'PAST.value'} #, 'relation': relation}
                     )
                 
                     progress_bar.update(1)
@@ -282,7 +285,7 @@ def create_data():
     bs_successors = get_successor(sparql, 'BS', exceptions)
     is_successors = get_successor(sparql, 'IS', exceptions)
     data2 = []
-    n_sample = 5
+    n_sample = 7
     progress_bar = tqdm()
     words_filtered = get_words_filtered(words, text='FUTURE')
 
@@ -292,10 +295,10 @@ def create_data():
                 if trg_acc in exceptions:
                     continue
                 target_account = ACC_DICT[trg_acc]['eng_name'].lower()
-                target_knowledge, *_ = ACC_DICT[trg_acc]['group'].split('-')
+                target_knowledge, target_acc_type, _ = ACC_DICT[trg_acc]['group'].split('-')
                 for sub_acc in successors:
                     subject_account = ACC_DICT[sub_acc]['eng_name'].lower()
-                    subject_knowledge, *_ = ACC_DICT[trg_acc]['group'].split('-')
+                    subject_knowledge, subject_acc_type, _ = ACC_DICT[trg_acc]['group'].split('-')
                     n = 0
                     while n < n_sample:
                         entities = []
@@ -316,7 +319,7 @@ def create_data():
                                 f_ENT(f'{number} {percent}'),
                                 f_ENT(f'{t_word} {t}')
                                 )
-                            relation = [1, 1, 2]
+                            # relation = [1, 1, 2]
                         else:
                             # subject_account, [MASK], random_number + percent/%, [MASK] + year/quarter, target_account
                             s = fmt.format(
@@ -326,12 +329,12 @@ def create_data():
                                 f_ENT(f'{t_word} {t}'),
                                 f_ENT(target_account)
                                 )
-                            relation = [1, 2, 1]
+                            # relation = [1, 2, 1]
                         # entities
                         ## target_account
-                        entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{trg_acc}'))
+                        entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{target_acc_type}'))
                         ## subject_account
-                        entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{sub_acc}'))
+                        entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{subject_acc_type}'))
                         ## MASK apply words
                         entities.append(get_entity(s, f_ENT(apply_word), apply_tag))
                         ## percentages
@@ -339,7 +342,7 @@ def create_data():
                         ## MASK year/quarter
                         entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
 
-                        d = {'question': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'IF.fact', 'relation': relation}
+                        d = {'text': s, 'entities': sorted(entities, key=lambda x: x[0]), 'intent': 'IF.fact'} #, 'relation': relation}
                         if d not in data2:
                             data2.append(
                                 d
@@ -347,8 +350,6 @@ def create_data():
                         
                         progress_bar.update(1)
                         n += 1
-
-    print(len(data2))
 
     # ----------------------------------------- target scenario: 3 ------------------------------------------------
     data3 = []
@@ -361,7 +362,7 @@ def create_data():
             if acc in exceptions:
                 continue
             target_account = dic['eng_name'].lower()
-            knowledge, *_ = dic['group'].split('-')
+            knowledge, acc_type, _ = dic['group'].split('-')
             for t in ['year', 'quarter']:
                 for t_word, t_tag, _ in words_filtered[t]:
                     entities = []
@@ -370,15 +371,15 @@ def create_data():
                         f_ENT(target_account), 
                         f_ENT(f'{t_word} {t}')
                         )
-                    relation = [0, 0, 0]
+                    # relation = [0, 0, 0]
                     # entities
                     ## target_account
-                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc}'))
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
                     ## MASK year/quarter
                     entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
                     
                     data3.append(
-                        {'question': s, 'entities': entities, 'intent': 'IF.forecast', 'relation': relation}
+                        {'text': s, 'entities': entities, 'intent': 'IF.forecast'} #, 'relation': relation}
                     )
                     
                     progress_bar.update(1)
@@ -386,108 +387,109 @@ def create_data():
     all_data = data1 + data2 + data3
     return all_data
 
+def save_as_jsonl(data_list, path):
+    with path.open('w', encoding='utf-8') as file:
+        for line in tqdm(data_list, total=len(data_list), desc='saving'):
+            file.write(json.dumps(line) + '\n')
+
 def post_process(all_data):
-    
     special_len = len(s_ENT)+len(e_ENT)
 
     for k, x in tqdm(enumerate(all_data), total=len(all_data)):
-        all_data[k]['question'] = x['question'].replace(s_ENT, '').replace(e_ENT, '')
+        all_data[k]['text'] = x['text'].replace(s_ENT, '').replace(e_ENT, '')
         for i, (s, e, ent) in enumerate(x['entities']):
             new_s = s-i*special_len
             new_e = new_s+(e-s)-special_len
             all_data[k]['entities'][i] = (new_s, new_e, ent)
 
-    with (data_path / 'all_data.jsonl').open('w', encoding='utf-8') as file:
-        for line in tqdm(all_data, total=len(all_data), desc='saving'):
-            file.write(json.dumps(line) + '\n')
-    
+    save_as_jsonl(all_data, path=data_path / 'all_data.jsonl')
+
+def get_text_tags_intent(nlu_tokenizer, data):
+    encodes = nlu_tokenizer.spacy_encode(data[0], pad_offset=False)
+    tags = nlu_tokenizer.offsets_to_iob_tags(encodes['offset_mapping'], ents=data[1])
+    return {'text': data[0], 'tags': tags, 'intent': data[2]}
+
 def process_all_data(nlu_tokenizer):
     
-
     with (data_path / 'all_data.jsonl').open('r', encoding='utf-8') as file:
         data = file.readlines()
         all_data = []
         for line in tqdm(data, total=len(data), desc='loading'):
             all_data.append(json.loads(line))
 
-    processed_data = []
-    for x in tqdm(all_data, total=len(all_data), desc='processing data'):
-        encodes = nlu_tokenizer(text=x['question'], add_special_tokens=False, return_offsets_mapping=True)
-        has_relation = x['relation'][0]
-        tags, acc_relation = nlu_tokenizer.offsets_to_iob_tags(encodes, ents=x['entities'], get_acc_relation=has_relation)
-        if acc_relation:
-            # if there is relation process the coordinates of tokens
-            # target: 1 / subject: 2
-            # relation = [has_relation, target_coor, subject_coor]
-            a, b = x['relation'][1:]
-            if a == 1 and b == 2:
-                s_trg, e_trg = acc_relation[0]
-                s_sub, e_sub = acc_relation[1]
-            elif a == 2 and b == 1:
-                s_trg, e_trg = acc_relation[1]
-                s_sub, e_sub = acc_relation[0]
-            # plus 1 for add cls token in the front of sentences
-            target_relation = (s_trg+1, e_trg+1)
-            subject_relation = (s_sub+1, e_sub+1)
-            relation = [has_relation, target_relation, subject_relation]
-        else:
-            relation = [has_relation, (0,0), (0,0)]
-        
-        processed_data.append((x['question'], tags, x['intent'], relation))
-
-    with (data_path / 'all_data_processed.pickle').open('wb') as file:
-        pickle.dump(processed_data, file)
-
-def split_all_data():
-    seed=777
-    with (data_path / 'all_data_processed.pickle').open('rb') as file:
-        all_data = pickle.load(file)
-
-    questions, tags, intents, relations = list(zip(*all_data))
-    # split to train & test
-    splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.1, random_state=seed)
-    train_idx, test_idx = list(*splitter.split(questions, intents))
-
-    train_data = []
+    # custom data
+    # split to train/valid & test
+    train_valid_data = []
     test_data = []
 
-    tags_set = set()
-    for idx in tqdm(range(len(questions)), total=len(questions), desc='spliting data'):
-        # process tags and intents
-        data = (questions[idx], tags[idx], intents[idx], relations[idx])
+    texts, entities, intents = list(zip(*all_data))
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.05, random_state=1234)
+    train_valid_idx, _ = list(*splitter.split(texts, intents))
 
-        for t in tags[idx]:
-            tags_set.add(t)
-
-        if idx in train_idx:
-            train_data.append(data)
-        elif idx in test_idx:
-            test_data.append(data)
+    for idx in tqdm(range(len(texts)), total=len(texts), desc='spliting train&valid /test'):
+        d = all_data[idx]
+        if idx in train_valid_idx:
+            # train_valid_data.append(all_data[idx])
+            train_valid_data.append(d)
         else:
-            raise ValueError("Index Error")
+            # d = get_text_tags_intent(nlu_tokenizer, data=all_data[idx])
+            test_data.append(d)
 
-    intents2id = {'None': 0}
-    for intent in set(intents):
-        if intents2id.get(intent) is None:
-            intents2id[intent] = len(intents2id)
+    # split to train valid
+    train_data = []
+    valid_data = []
 
-    tags2id = {'[PAD]': 0, 'O': 1}
-    for t in tags_set:
-        if tags2id.get(t) is None:
-            tags2id[t] = len(tags2id)
+    tv_texts, _, tv_intents = list(zip(*train_valid_data))
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.1, random_state=1234)
+    train_idx, _ = list(*splitter.split(tv_texts, tv_intents))
 
-    with (data_path / 'all_data_splitted.pickle').open('wb') as file:
-        pickle.dump({
-            'train': train_data, 
-            'test': test_data, 
-            }, file)
+    for idx in tqdm(range(len(tv_texts)), total=len(tv_texts), desc='spliting train/valid'):
+        d = train_valid_data[idx]
+        if idx in train_idx:
+            # d = get_text_tags_intent(nlu_tokenizer, data=train_valid_data[idx])
+            train_data.append(d)
+        else:
+            # d = get_text_tags_intent(nlu_tokenizer, data=train_valid_data[idx])
+            valid_data.append(d)
 
-    with (data_path / 'all_data_ids.pickle').open('wb') as file:
-        pickle.dump({
-            'tags2id': tags2id, 
-            'intents2id': intents2id
-            }, file)
+    # conll2003
+    conll = load_dataset('conll2003')
+    dataset = conll['train']
+    feature = dataset.features['ner_tags'].feature
+    for x in tqdm(dataset, total=len(dataset), desc='trainset'):
+        text = ' '.join(x['tokens']).lower()
+        tags = list(map(feature.int2str, x['ner_tags']))
+        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
 
+        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
+        d = {'text': text, 'entities': entities, 'intent': 'None'}
+        train_data.append(d)
+
+    dataset = conll['validation']
+    feature = dataset.features['ner_tags'].feature
+    for x in tqdm(dataset, total=len(dataset), desc='validset'):
+        text = ' '.join(x['tokens']).lower()
+        tags = list(map(feature.int2str, x['ner_tags']))
+        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
+
+        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
+        d = {'text': text, 'entities': entities, 'intent': 'None'}
+        valid_data.append(d)
+
+    dataset = conll['test']
+    feature = dataset.features['ner_tags'].feature
+    for x in tqdm(dataset, total=len(dataset), desc='testdata'):
+        text = ' '.join(x['tokens']).lower()
+        tags = list(map(feature.int2str, x['ner_tags']))
+        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
+
+        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
+        d = {'text': text, 'entities': entities, 'intent': 'None'}
+        test_data.append(d)
+
+    save_as_jsonl(train_data, path=data_path / 'all_data_train.jsonl')
+    save_as_jsonl(valid_data, path=data_path / 'all_data_valid.jsonl')
+    save_as_jsonl(test_data, path=data_path / 'all_data_test.jsonl')
 
 if __name__ == '__main__':
     
@@ -503,4 +505,16 @@ if __name__ == '__main__':
 
     nlu_tokenizer = NLUTokenizer(hugg_path='bert-base-uncased', spacy_path='en_core_web_sm')
     process_all_data(nlu_tokenizer)
-    split_all_data()
+    
+    labels = {
+        'intent': ['None', 'IF.fact', 'IF.forcast', 'PAST.value'],
+        'tags': [
+            'O', 'B-APPLY', 'I-APPLY', 
+            'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
+            'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
+            'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
+        ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    }
+
+    with (data_path / 'labels.json').open('w', encoding='utf-8') as file:
+        json.dump(labels, file)

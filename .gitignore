@@ -132,6 +132,5 @@ setting_files/settings.yml
 docs_cache
 Notebook/docs_cache
 .DS_Store
-data/all_data*
 logs/
 checkpoints/
