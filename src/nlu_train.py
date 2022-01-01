@@ -1,5 +1,5 @@
 import yaml
-import pickle
+import argparse
 from multiprocessing import freeze_support
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -10,12 +10,17 @@ from nlu_models import NLUModel
 from nlu_utils import NLUDataModule
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='settings_file_name')
+    parser.add_argument('-f', '--file', metavar='N', type=str, default='train_settings.yml',
+                        help='settings_file name in the setting_files folder')
+    args = parser.parse_args()
+
     freeze_support()
     main_path = Path().absolute().parent
     data_path = main_path / 'data'
     setting_path = main_path / 'setting_files'
 
-    with (setting_path / 'train_settings.yml').open('r') as file:
+    with (setting_path / args.file).open('r') as file:
         settings = yaml.load(file, Loader=yaml.FullLoader)
 
     data_module = NLUDataModule(

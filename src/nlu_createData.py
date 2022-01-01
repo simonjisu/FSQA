@@ -454,39 +454,35 @@ def process_all_data(nlu_tokenizer):
 
     # conll2003
     conll = load_dataset('conll2003')
-    dataset = conll['train']
-    feature = dataset.features['ner_tags'].feature
-    for x in tqdm(dataset, total=len(dataset), desc='trainset'):
-        text = ' '.join(x['tokens']).lower()
-        tags = list(map(feature.int2str, x['ner_tags']))
-        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
+    def add_conll_data(conll, nlu_tokenizer, data_list, typ='train', delete_errors=False):
+        dataset = conll[typ]
+        feature = dataset.features['ner_tags'].feature
+        errors = 0
+        for x in tqdm(dataset, total=len(dataset), desc=f'{typ}set'):
+            text = ' '.join(x['tokens']).lower()
+            doc = nlu_tokenizer.spacy_nlp(text)
+            if delete_errors and len(list(doc)) != len(x['tokens']):
+                errors += 1
+                continue
+                
+            tags = list(map(feature.int2str, x['ner_tags']))
+            if len(list(doc)) != len(x['tokens']):
+                spacy_tokens = list(map(str, doc))
+                original_tokens = x['tokens']
+                tags = nlu_tokenizer.map_spanned_tokens(
+                    longer_tokens=spacy_tokens, shorter_token=original_tokens, tags=tags
+                )
+            entities = biluo_tags_to_offsets(doc, iob_to_biluo(tags))
 
-        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
-        d = {'text': text, 'entities': entities, 'intent': 'None'}
-        train_data.append(d)
+            d = {'text': text, 'entities': entities, 'intent': 'None'}
+            data_list.append(d)
+        if delete_errors:
+            print(f'{typ} errors: {errors} / {len(dataset)}')
 
-    dataset = conll['validation']
-    feature = dataset.features['ner_tags'].feature
-    for x in tqdm(dataset, total=len(dataset), desc='validset'):
-        text = ' '.join(x['tokens']).lower()
-        tags = list(map(feature.int2str, x['ner_tags']))
-        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
-
-        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
-        d = {'text': text, 'entities': entities, 'intent': 'None'}
-        valid_data.append(d)
-
-    dataset = conll['test']
-    feature = dataset.features['ner_tags'].feature
-    for x in tqdm(dataset, total=len(dataset), desc='testdata'):
-        text = ' '.join(x['tokens']).lower()
-        tags = list(map(feature.int2str, x['ner_tags']))
-        entities = biluo_tags_to_offsets(nlu_tokenizer.spacy_nlp(text), iob_to_biluo(tags))
-
-        # d = get_text_tags_intent(nlu_tokenizer, data=(text, entities, 'None'))
-        d = {'text': text, 'entities': entities, 'intent': 'None'}
-        test_data.append(d)
-
+    add_conll_data(conll, nlu_tokenizer, train_data, typ='train', delete_errors=False)
+    add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation', delete_errors=False)
+    add_conll_data(conll, nlu_tokenizer, test_data, typ='test', delete_errors=False)
+    
     save_as_jsonl(train_data, path=data_path / 'all_data_train.jsonl')
     save_as_jsonl(valid_data, path=data_path / 'all_data_valid.jsonl')
     save_as_jsonl(test_data, path=data_path / 'all_data_test.jsonl')
@@ -507,7 +503,7 @@ if __name__ == '__main__':
     process_all_data(nlu_tokenizer)
     
     labels = {
-        'intent': ['None', 'IF.fact', 'IF.forcast', 'PAST.value'],
+        'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
         'tags': [
             'O', 'B-APPLY', 'I-APPLY', 
             'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 

@@ -5,7 +5,7 @@ valid_file: 'all_data_valid.jsonl'
 test_file: 'all_data_test.jsonl'
 labels_file: 'labels.json'
 num_workers: 0
-max_len: 64
+max_len: 256
 lr: 0.001
 batch_size: 64
 exp_name: 'nlu'
