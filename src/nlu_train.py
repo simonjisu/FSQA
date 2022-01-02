@@ -40,7 +40,6 @@ if __name__ == '__main__':
         'model_path': settings['model_path'], 
         'intent_size': len(data_module.intents2id), 
         'tags_size': len(data_module.tags2id), 
-        'max_len': settings['max_len'],
         'lr': settings['lr'],
         'multigpu': True if settings['n_gpus'] > 1 else False
     }

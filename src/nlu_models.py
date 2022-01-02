@@ -32,16 +32,16 @@ class NLUModel(pl.LightningModule):
         self.bert_pooler = BertPooler(cfg)
         self.intent_network = nn.Linear(cfg.hidden_size, self.hparams.intent_size)
         
-        # losses
-        if self.hparams.stage == 'train':
-            self.intent_loss = nn.CrossEntropyLoss()
-            self.tags_loss = nn.CrossEntropyLoss()
-            # metrics
-            self.metrics = nn.ModuleDict({
-                'train_': self.create_metrics(prefix='train_'),
-                'val_': self.create_metrics(prefix='val_'),
-                'test_': self.create_metrics(prefix='test_')
-            })
+        # losses   
+        self.intent_loss = nn.CrossEntropyLoss()
+        self.tags_loss = nn.CrossEntropyLoss()
+                 
+        # metrics
+        self.metrics = nn.ModuleDict({
+            'train_': self.create_metrics(prefix='train_'),
+            'val_': self.create_metrics(prefix='val_'),
+            'test_': self.create_metrics(prefix='test_')
+        })
             
     def contiguous(self, x):
         return x.squeeze(-1).contiguous().type_as(x)

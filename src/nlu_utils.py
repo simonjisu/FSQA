@@ -45,7 +45,6 @@ class NLUTokenizer:
 
     def get_tags(self, text, ents, tag_type='iob'):
         """
-        ```
         IOB SCHEME
         I - Token is inside an entity.
         O - Token is outside an entity.
@@ -57,7 +56,6 @@ class NLUTokenizer:
         L - Token is the last token of a multi-token entity.
         U - Token is a single-token unit entity.
         O - Token is outside an entity.
-        ```
         """
         doc = self.spacy_nlp(text)
         biluo_tags = offsets_to_biluo_tags(doc, ents)
@@ -110,10 +108,9 @@ class NLUTokenizer:
             raise ValueError(f"problems in mapping: \n{spanned_tags}\n short: {shorter_token}\n Long: {longer_tokens}")
         return spanned_tags
 
-
     @classmethod
-    def pad_tags(cls, tags, len_input_ids, pad_idx):
-        padded_tags = [pad_idx] + tags + [pad_idx] + ([pad_idx] * (len_input_ids - len(tags) - 2))
+    def pad_tags(cls, tags, pad_idx):
+        padded_tags = [pad_idx] + tags + [pad_idx]
         return padded_tags
 
 class NLUDataset(Dataset):
@@ -138,42 +135,45 @@ class NLUDataset(Dataset):
         text = self.data[index]['text']
         ents = self.data[index]['entities']
         intent = self.data[index]['intent']
-
-        # get tags
         tags = self.tokenizer.get_tags(text, ents, tag_type=self.tag_type)
         spacy_tokens = self.tokenizer.spacy_tokenize(text)
         bert_tokens = self.tokenizer.bert_tokenize(text)
         spanned_tags = self.tokenizer.map_spanned_tokens(
             longer_tokens=bert_tokens, shorter_token=spacy_tokens, tags=tags
         )
-        
         bert_encodes = self.tokenizer(
-            text,
+            text, 
             add_special_tokens=True, 
-            padding='max_length', 
             truncation=True, 
-            max_length=self.max_len, 
+            max_length=self.max_len
         )
         numeric_tags = list(map(self.tags2id.get, spanned_tags))
-        if None in numeric_tags:
-            raise KeyError(f"tags2id.get has output None in {index}")
-        padded_tags = self.tokenizer.pad_tags(
-            tags=numeric_tags,
-            len_input_ids=len(bert_encodes['input_ids']), 
-            pad_idx=self.tags2id.get('O')
-        )
-        # intent
+        padded_tags = self.tokenizer.pad_tags(numeric_tags, pad_idx=self.tags2id.get('O'))
         intent = self.intents2id.get(intent)
-
-        item = {k: torch.as_tensor(v) for k, v in bert_encodes.items()}
-        item['intent'] = torch.as_tensor(intent)
-        item['tags'] = torch.as_tensor(padded_tags)
-
+        
+        item = {k: v for k, v in bert_encodes.items()}
+        item['intent'] = intent
+        item['tags'] = padded_tags
         return item
 
     def __len__(self):
         return len(self.data)
 
+    @classmethod
+    def custom_collate_fn(cls, items):
+        # items = [{'A': 0, 'B': 1}, {'A': 100, 'B': 100}]
+        # do padding
+        max_len = max([len(item['input_ids']) for item in items])
+        pad_idx = 0
+        batch = defaultdict(list)
+        for item in items:
+            batch['input_ids'].append(item['input_ids'] + [pad_idx]*(max_len - len(item['input_ids'])))
+            batch['token_type_ids'].append(item['token_type_ids'] + [pad_idx]*(max_len - len(item['token_type_ids'])))
+            batch['attention_mask'].append(item['attention_mask'] + [pad_idx]*(max_len - len(item['attention_mask'])))
+            batch['tags'].append(item['tags'] + [pad_idx]*(max_len - len(item['tags'])))
+            batch['intent'].append(item['intent'])
+        batch = {k: torch.as_tensor(v) for k, v in batch.items()}
+        return batch
 
 class NLUDataModule(pl.LightningDataModule):
     def __init__(
@@ -227,7 +227,7 @@ class NLUDataModule(pl.LightningDataModule):
             batch_size=self.batch_size, 
             shuffle=shuffle, 
             num_workers=self.num_workers, 
-            # persistent_workers=True if self.num_workers > 1 else False
+            collate_fn=NLUDataset.custom_collate_fn
             )
 
     def train_dataloader(self):
