@@ -111,7 +111,7 @@ class NLUModel(pl.LightningModule):
         for k in self.outputs_keys:
             for k_sub, v in self.metrics[prefix][k](outputs[k], targets[k]).items():
                 outputs_metrics[k_sub] = v
-        self.log_dict(outputs_metrics, on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
+        self.log_dict(outputs_metrics, on_step=False, on_epoch=True, sync_dist=self.hparams.multigpu)
 
     def training_step(self, batch, batch_idx):
         loss = self.forward_all(batch, prefix='train_')
