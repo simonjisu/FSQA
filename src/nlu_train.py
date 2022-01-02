@@ -2,6 +2,7 @@ import yaml
 import argparse
 from multiprocessing import freeze_support
 import pytorch_lightning as pl
+from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
 
@@ -58,15 +59,17 @@ if __name__ == '__main__':
     )
     progress_callback = TQDMProgressBar(refresh_rate=settings['refresh_rate'])
 
+    seed_everything(seed=settings['seed'])
     trainer = pl.Trainer(
         gpus=settings['n_gpus'], 
         max_epochs=settings['n_epochs'], 
         logger=logger, 
         num_sanity_val_steps=settings['num_sanity_val_steps'],
-        callbacks=[checkpoint_callback, progress_callback]
+        callbacks=[checkpoint_callback, progress_callback],
+        deterministic=True,
     )
     trainer.fit(
         model, datamodule=data_module
     )
-    trainer.test(model, ckpt_path=str(checkpoint_path), dataloaders=data_module.test_loader())
+    trainer.test(ckpt_path='best', datamodule=data_module)
 
