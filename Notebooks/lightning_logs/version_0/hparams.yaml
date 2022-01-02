@@ -1,7 +1,0 @@
-intent_size: 4
-lr: 0.001
-max_len: 256
-model_path: bert-base-uncased
-multigpu: true
-stage: train
-tags_size: 23
