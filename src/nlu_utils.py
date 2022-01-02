@@ -108,6 +108,54 @@ class NLUTokenizer:
             raise ValueError(f"problems in mapping: \n{spanned_tags}\n short: {shorter_token}\n Long: {longer_tokens}")
         return spanned_tags
 
+    def offset_mapping_to_tags(self, offset_mapping, ents):
+        starts, ends = dict(), dict()
+        for tkn_idx, (s_idx, e_idx) in enumerate(offset_mapping):
+            if s_idx == e_idx == 0:
+                continue
+            starts[s_idx] = tkn_idx
+            ends[e_idx] = tkn_idx
+
+        char_in_ents = {}
+        labels = ['-'] * len(offset_mapping)
+        for s_char, e_char, ent in ents:
+            if not ent:
+                for s in starts:  # account for many-to-one
+                    if s >= s_char and s < e_char:
+                        labels[starts[s]] = 'O'
+            else:
+                for char_idx in range(s_char, e_char):
+                    if char_idx in char_in_ents.keys():
+                        raise ValueError(f'Trying to Overlapping same tokens: {char_in_ents[char_idx]} / {(s_char, e_char, ent)}')
+                    char_in_ents[char_idx] = (s_char, e_char, ent)
+                s_token = starts.get(s_char)
+                e_token = ends.get(e_char)
+
+                if s_token is not None and e_token is not None:
+                    if s_token == e_token:
+                        labels[s_token] = f"U-{ent}"
+                    else:
+                        labels[s_token] = f"B-{ent}"
+                        for i in range(s_token + 1, e_token):
+                            labels[i] = f"I-{ent}"
+                        labels[e_token] = f"L-{ent}"
+                        
+        entity_chars = set()
+        for s_char, e_char, ent in ents:
+            for i in range(s_char, e_char):
+                entity_chars.add(i)
+        for token_idx, (s, e) in enumerate(offset_mapping):
+            for i in range(s, e):
+                if i in entity_chars:
+                    break
+            else:
+                labels[token_idx] = 'O'
+        if '-' in labels:
+            print(labels.index('-'))
+            raise ValueError('Some Tokens are not properly assigned' + f'{labels}')
+
+        return labels
+
     @classmethod
     def pad_tags(cls, tags, pad_idx):
         padded_tags = [pad_idx] + tags + [pad_idx]
@@ -135,19 +183,18 @@ class NLUDataset(Dataset):
         text = self.data[index]['text']
         ents = self.data[index]['entities']
         intent = self.data[index]['intent']
-        tags = self.tokenizer.get_tags(text, ents, tag_type=self.tag_type)
-        spacy_tokens = self.tokenizer.spacy_tokenize(text)
-        bert_tokens = self.tokenizer.bert_tokenize(text)
-        spanned_tags = self.tokenizer.map_spanned_tokens(
-            longer_tokens=bert_tokens, shorter_token=spacy_tokens, tags=tags
-        )
+
+        bert_offset_mapping = self.bert(text, add_special_tokens=False, return_offsets_mapping=True)['offset_mapping']
+        tags = self.tokenizer.offset_mapping_to_tags(offset_mapping=bert_offset_mapping, ents=ents)
+        tags = biluo_to_iob(tags)
+        
         bert_encodes = self.tokenizer(
             text, 
             add_special_tokens=True, 
             truncation=True, 
             max_length=self.max_len
         )
-        numeric_tags = list(map(self.tags2id.get, spanned_tags))
+        numeric_tags = list(map(self.tags2id.get, tags))
         padded_tags = self.tokenizer.pad_tags(numeric_tags, pad_idx=self.tags2id.get('O'))
         intent = self.intents2id.get(intent)
         
