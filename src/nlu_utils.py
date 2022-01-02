@@ -184,7 +184,7 @@ class NLUDataset(Dataset):
         ents = self.data[index]['entities']
         intent = self.data[index]['intent']
 
-        bert_offset_mapping = self.bert(text, add_special_tokens=False, return_offsets_mapping=True)['offset_mapping']
+        bert_offset_mapping = self.tokenizer.bert(text, add_special_tokens=False, return_offsets_mapping=True)['offset_mapping']
         tags = self.tokenizer.offset_mapping_to_tags(offset_mapping=bert_offset_mapping, ents=ents)
         tags = biluo_to_iob(tags)
         
