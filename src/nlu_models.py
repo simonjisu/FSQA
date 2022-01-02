@@ -35,7 +35,7 @@ class NLUModel(pl.LightningModule):
         # losses
         if self.hparams.stage == 'train':
             self.intent_loss = nn.CrossEntropyLoss()
-            self.tags_loss = nn.CrossEntropyLoss(ignore_index=0)
+            self.tags_loss = nn.CrossEntropyLoss()
             # metrics
             self.metrics = nn.ModuleDict({
                 'train_': self.create_metrics(prefix='train_'),
