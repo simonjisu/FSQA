@@ -41,6 +41,8 @@ if __name__ == '__main__':
         'intent_size': len(data_module.intents2id), 
         'tags_size': len(data_module.tags2id), 
         'lr': settings['lr'],
+        'weight_decay_rate': settings['weight_decay_rate'],
+        'loss_type': settings['loss_type'],
         'multigpu': True if settings['n_gpus'] > 1 else False
     }
 
