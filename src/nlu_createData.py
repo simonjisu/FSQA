@@ -268,10 +268,10 @@ def create_data():
                             pre_token,
                             f_ENT(target_account)
                         )
-                    # relation = [0, 0, 0]  # no_relation, order1, order2
                     # entities
                     ## target_account
-                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
+                    # entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}'))
                     ## MASK year/quarter
                     entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
                     
@@ -333,9 +333,11 @@ def create_data():
                             # relation = [1, 2, 1]
                         # entities
                         ## target_account
-                        entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{target_acc_type}'))
+                        # entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}.{target_acc_type}'))
+                        entities.append(get_entity(s, f_ENT(target_account), f'{target_knowledge}'))
                         ## subject_account
-                        entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{subject_acc_type}'))
+                        # entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}.{subject_acc_type}'))
+                        entities.append(get_entity(s, f_ENT(subject_account), f'{subject_knowledge}'))
                         ## MASK apply words
                         entities.append(get_entity(s, f_ENT(apply_word), apply_tag))
                         ## percentages
@@ -375,7 +377,8 @@ def create_data():
                     # relation = [0, 0, 0]
                     # entities
                     ## target_account
-                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
+                    # entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}.{acc_type}'))
+                    entities.append(get_entity(s, f_ENT(target_account), f'{knowledge}'))
                     ## MASK year/quarter
                     entities.append(get_entity(s, f_ENT(f'{t_word} {t}'), t_tag))
                     
@@ -410,7 +413,7 @@ def get_text_tags_intent(nlu_tokenizer, data):
     tags = nlu_tokenizer.offsets_to_iob_tags(encodes['offset_mapping'], ents=data[1])
     return {'text': data[0], 'tags': tags, 'intent': data[2]}
 
-def process_all_data(nlu_tokenizer):
+def process_all_data(nlu_tokenizer, ver=''):
     
     with (data_path / 'all_data.jsonl').open('r', encoding='utf-8') as file:
         data = file.readlines()
@@ -483,9 +486,9 @@ def process_all_data(nlu_tokenizer):
     add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation')
     add_conll_data(conll, nlu_tokenizer, test_data, typ='test')
     
-    save_as_jsonl(train_data, path=data_path / 'all_data_train.jsonl')
-    save_as_jsonl(valid_data, path=data_path / 'all_data_valid.jsonl')
-    save_as_jsonl(test_data, path=data_path / 'all_data_test.jsonl')
+    save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}.jsonl')
+    save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}.jsonl')
+    save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}.jsonl')
 
 if __name__ == '__main__':
     
@@ -500,17 +503,27 @@ if __name__ == '__main__':
     post_process(all_data)
 
     nlu_tokenizer = NLUTokenizer(hugg_path='bert-base-uncased', spacy_path='en_core_web_sm')
-    process_all_data(nlu_tokenizer)
     
+    ver = '1'
+    # labels = {
+    #     'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
+    #     'tags': [
+    #         'O', 'B-APPLY', 'I-APPLY', 
+    #         'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
+    #         'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
+    #         'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
+    #     ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    # }
+
+    ver = '2'
     labels = {
         'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
         'tags': [
-            'O', 'B-APPLY', 'I-APPLY', 
-            'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
-            'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
+            'O', 'B-APPLY', 'I-APPLY', 'B-BS', 'I-BS', 'B-IS', 'I-IS',  
             'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
         ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
     }
 
-    with (data_path / 'labels.json').open('w', encoding='utf-8') as file:
+    process_all_data(nlu_tokenizer, ver=ver)
+    with (data_path / f'labels{ver}.json').open('w', encoding='utf-8') as file:
         json.dump(labels, file)
