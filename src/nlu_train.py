@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     checkpoint_callback = ModelCheckpoint(
         dirpath=str(checkpoint_path), 
-        save_top_k=settings['save_top_k'],
+        save_top_k=trainer_settings['save_top_k'],
         monitor='val_loss'
     )
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
