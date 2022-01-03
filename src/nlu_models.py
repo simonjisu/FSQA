@@ -6,6 +6,7 @@ from collections import defaultdict
 from transformers import BertConfig, BertForTokenClassification
 
 import math
+from torch.nn.modules.loss import _WeightedLoss
 from torch.optim.lr_scheduler import _LRScheduler
 
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
@@ -63,16 +64,22 @@ class CosineAnnealingWarmUpRestarts(_LRScheduler):
         for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
             param_group['lr'] = lr
 
-class FocalLoss(nn.Module):
-    def __init__(self, alpha=1, gamma=2, logits=False, reduction='mean'):
+class FocalLoss(_WeightedLoss):
+    __constants__ = ['ignore_index', 'reduction']
+    ignore_index: int
+    label_smoothing: float
+    def __init__(self, alpha=1, gamma=2, ignore_index: int=-100, reduction: str = 'mean') -> None:
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
-        self.logits = logits
+        self.ignore_index = ignore_index
         self.reduction = reduction
+        self.ce = nn.CrossEntropyLoss(
+            ignore_index=self.ignore_index,
+            reduction='none')
 
     def forward(self, inputs, targets):
-        ce_loss = nn.CrossEntropyLoss(reduction='none')(inputs, targets)
+        ce_loss = self.ce(inputs, targets)
 
         pt = torch.exp(-ce_loss)
         F_loss = self.alpha * (1-pt)**self.gamma * ce_loss
