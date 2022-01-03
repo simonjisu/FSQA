@@ -218,7 +218,7 @@ class NLUModel(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
             self.parameters(), 
-            r=self.hparams.lr, 
+            lr=self.hparams.lr, 
             weight_decay=self.hparams.weight_decay_rate
         )
         # lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
