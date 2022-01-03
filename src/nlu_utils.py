@@ -9,8 +9,9 @@ from transformers import BertTokenizerFast
 from torch.utils.data import Dataset, DataLoader
 from typing import Tuple, List, Dict, Union
 from spacy.symbols import ORTH, NORM
-from spacy.training import biluo_to_iob, offsets_to_biluo_tags
+from spacy.training import iob_to_biluo, biluo_to_iob, offsets_to_biluo_tags, biluo_tags_to_offsets
 from collections import defaultdict
+from tokenizations import get_alignments
 
 def load_jsonl(path):
     with path.open('r', encoding='utf-8') as file:
@@ -65,6 +66,53 @@ class NLUTokenizer:
             return biluo_tags
         else:
             raise KeyError(f"tag_type must be either `iob` or `biluo`, your is `{tag_type}`")
+
+    def fix_tags_alignment(self, longer_tokens, shorter_tokens, tags):
+        """
+        return biluo tags, tags are mapped to longer tokens
+        """
+        a2b, _ = get_alignments(a=shorter_tokens, b=longer_tokens)
+        biluo_tags = iob_to_biluo(tags)
+        mapped_tags = ['-'] * len(longer_tokens)
+        for i, tag in enumerate(biluo_tags):
+            if tag == 'O':
+                for k in a2b[i]:
+                    mapped_tags[k] = tag
+                continue
+
+            prefix, label = tag.split('-')
+            if prefix == 'B':
+                for j, k in enumerate(a2b[i]):
+                    if j == 0:
+                        mapped_tags[k] = tag
+                    else:
+                        mapped_tags[k] = f'I-{label}'
+            elif prefix == 'L':
+                for j, k in enumerate(a2b[i]):
+                    if j == len(a2b[i])-1:
+                        mapped_tags[k] = tag
+                    else:
+                        mapped_tags[k] = f'I-{label}'
+            elif prefix == 'U':
+                if len(a2b[i]) == 1:
+                    k = a2b[i][0]
+                    mapped_tags[k] = tag
+                elif len(a2b[i]) == 2:
+                    b, l = a2b[i]
+                    mapped_tags[b] = f'B-{label}'
+                    mapped_tags[l] = f'L-{label}'
+                else:
+                    for j, k in enumerate(a2b[i]):
+                        if j == 0:
+                            mapped_tags[k] = f'B-{label}'
+                        elif j == len(a2b[i])-1:
+                            mapped_tags[k] = f'L-{label}'
+                        else:
+                            mapped_tags[k] = f'I-{label}'
+            else:
+                for j, k in enumerate(a2b[i]):
+                    mapped_tags[k] = tag
+        return mapped_tags
 
     def get_token_mappings(self, longer_tokens, shorter_tokens):
         """

@@ -2,6 +2,7 @@ import json
 import pickle
 import pandas as pd
 import numpy as np
+from spacy.training.iob_utils import biluo_to_iob
 
 from tqdm import tqdm
 from pathlib import Path
@@ -454,34 +455,33 @@ def process_all_data(nlu_tokenizer):
 
     # conll2003
     conll = load_dataset('conll2003')
-    def add_conll_data(conll, nlu_tokenizer, data_list, typ='train', delete_errors=False):
+    def add_conll_data(conll, nlu_tokenizer, data_list, typ='train'):
         dataset = conll[typ]
         feature = dataset.features['ner_tags'].feature
         errors = 0
         for x in tqdm(dataset, total=len(dataset), desc=f'{typ}set'):
             text = ' '.join(x['tokens']).lower()
             doc = nlu_tokenizer.spacy_nlp(text)
-            if delete_errors and len(list(doc)) != len(x['tokens']):
+
+            tags = list(map(feature.int2str, x['ner_tags']))
+            spacy_tokens = list(map(str, doc))
+            original_tokens = list(map(str.lower, x['tokens']))
+            mapped_tags = nlu_tokenizer.fix_tags_alignment(
+                longer_tokens=spacy_tokens, shorter_tokens=original_tokens, tags=tags
+            )
+
+            entities = biluo_tags_to_offsets(doc, mapped_tags)
+            if not entities:
                 errors += 1
                 continue
-                
-            tags = list(map(feature.int2str, x['ner_tags']))
-            if len(list(doc)) != len(x['tokens']):
-                spacy_tokens = list(map(str, doc))
-                original_tokens = x['tokens']
-                tags = nlu_tokenizer.map_spanned_tokens(
-                    longer_tokens=spacy_tokens, shorter_token=original_tokens, tags=tags
-                )
-            entities = biluo_tags_to_offsets(doc, iob_to_biluo(tags))
 
             d = {'text': text, 'entities': entities, 'intent': 'None'}
             data_list.append(d)
-        if delete_errors:
-            print(f'{typ} errors: {errors} / {len(dataset)}')
+        print(f'{typ} errors: {errors} / {len(dataset)}')
 
-    add_conll_data(conll, nlu_tokenizer, train_data, typ='train', delete_errors=False)
-    add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation', delete_errors=False)
-    add_conll_data(conll, nlu_tokenizer, test_data, typ='test', delete_errors=False)
+    add_conll_data(conll, nlu_tokenizer, train_data, typ='train')
+    add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation')
+    add_conll_data(conll, nlu_tokenizer, test_data, typ='test')
     
     save_as_jsonl(train_data, path=data_path / 'all_data_train.jsonl')
     save_as_jsonl(valid_data, path=data_path / 'all_data_valid.jsonl')
