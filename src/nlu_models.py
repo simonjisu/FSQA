@@ -216,9 +216,21 @@ class NLUModel(pl.LightningModule):
         return loss_dict
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.weight_decay_rate)
-        lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
-        
+        optimizer = torch.optim.Adam(
+            self.parameters(), 
+            r=self.hparams.lr, 
+            weight_decay=self.hparams.weight_decay_rate
+        )
+        # lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
+        lr_schedulers = CosineAnnealingWarmUpRestarts(
+            optimizer, 
+            T_0=self.hparams.schedular_T_0, 
+            T_mult=self.hparams.schedular_T_mult, 
+            eta_max=self.hparams.schedular_eta_max, 
+            T_up=self.hparams.schedular_T_up, 
+            gamma=self.hparams.schedular_gamma
+        )
+
         return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
 
     def predict(self, input_ids, token_type_ids, attention_mask):

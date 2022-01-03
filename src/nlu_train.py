@@ -50,9 +50,11 @@ if __name__ == '__main__':
         'loss_type': model_settings['loss_type'],
         'multigpu': True if trainer_settings['n_gpus'] > 1 else False
     }
+    for k, v in model_settings['schedular'].items():
+        hparams[f'schedular_{k}'] = v
     if model_settings['loss_type'] == 'focal':
-        hparams['focal_alpha'] = model_settings['focal_alpha']
-        hparams['focal_gamma'] = model_settings['focal_gamma']
+        for k, v in model_settings['focal'].items():
+            hparams[f'focal_{k}'] = v
 
     model = NLUModel(**hparams)
 

@@ -13,9 +13,18 @@ data_module:
 model:
   stage: 'train'
   model_path: 'bert-base-uncased'
-  lr: 0.01
+  lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.00001
   loss_type: 'focal' # focal / ce
+  focal:
+    alpha: 1
+    gamma: 300
+  schedular:
+    T_0: 3
+    T_up: 1
+    T_mult: 1
+    eta_max: 0.01
+    gamma: 0.75
 
 trainer:
   save_top_k: 2
