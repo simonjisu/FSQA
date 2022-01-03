@@ -24,27 +24,35 @@ if __name__ == '__main__':
     with (setting_path / args.file).open('r') as file:
         settings = yaml.load(file, Loader=yaml.FullLoader)
 
+    data_module_settings = settings['data_module']
+    model_settings = settings['model']
+    trainer_settings = settings['trainer']
+
     data_module = NLUDataModule(
-        train_path=data_path / settings['train_file'], 
-        valid_path=data_path / settings['valid_file'],
-        test_path=data_path / settings['test_file'],
-        labels_path=data_path / settings['labels_file'],
-        batch_size=settings['batch_size'], 
-        max_len=settings['max_len'],
-        num_workers=settings['num_workers'],
+        train_path=data_path / data_module_settings['train_file'], 
+        valid_path=data_path / data_module_settings['valid_file'],
+        test_path=data_path / data_module_settings['test_file'],
+        labels_path=data_path / data_module_settings['labels_file'],
+        batch_size=data_module_settings['batch_size'], 
+        max_len=data_module_settings['max_len'],
+        num_workers=data_module_settings['num_workers'],
         seed=settings['seed']
     )
 
+    
     hparams = {
-        'stage': settings['stage'],
-        'model_path': settings['model_path'], 
+        'stage': model_settings['stage'],
+        'model_path': model_settings['model_path'], 
         'intent_size': len(data_module.intents2id), 
         'tags_size': len(data_module.tags2id), 
-        'lr': settings['lr'],
-        'weight_decay_rate': settings['weight_decay_rate'],
-        'loss_type': settings['loss_type'],
-        'multigpu': True if settings['n_gpus'] > 1 else False
+        'lr': model_settings['lr'],
+        'weight_decay_rate': model_settings['weight_decay_rate'],
+        'loss_type': model_settings['loss_type'],
+        'multigpu': True if trainer_settings['n_gpus'] > 1 else False
     }
+    if model_settings['loss_type'] == 'focal':
+        hparams['focal_alpha'] = model_settings['focal_alpha']
+        hparams['focal_gamma'] = model_settings['focal_gamma']
 
     model = NLUModel(**hparams)
 
@@ -58,14 +66,14 @@ if __name__ == '__main__':
         save_top_k=settings['save_top_k'],
         monitor='val_loss'
     )
-    progress_callback = TQDMProgressBar(refresh_rate=settings['refresh_rate'])
+    progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
 
     seed_everything(seed=settings['seed'])
     trainer = pl.Trainer(
-        gpus=settings['n_gpus'], 
-        max_epochs=settings['n_epochs'], 
+        gpus=trainer_settings['n_gpus'], 
+        max_epochs=trainer_settings['n_epochs'], 
         logger=logger, 
-        num_sanity_val_steps=settings['num_sanity_val_steps'],
+        num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
         callbacks=[checkpoint_callback, progress_callback],
         deterministic=True,
     )

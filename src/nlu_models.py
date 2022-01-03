@@ -108,7 +108,6 @@ class NLUModel(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
         self.save_hyperparameters() 
-        # self.hparams: model_path, intent_size, tags_size, max_len
         self.outputs_keys = ['tags', 'intent']
         # Networks
         cfg = BertConfig()
@@ -121,8 +120,8 @@ class NLUModel(pl.LightningModule):
             self.intent_loss = nn.CrossEntropyLoss()
             self.tags_loss = nn.CrossEntropyLoss()
         elif self.hparams.loss_type == 'focal':
-            self.intent_loss = FocalLoss()
-            self.tags_loss = FocalLoss()
+            self.intent_loss = FocalLoss(alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
+            self.tags_loss = FocalLoss(alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
         else:
             raise NotImplementedError('Loss is not implemented')                 
         # metrics
@@ -217,7 +216,7 @@ class NLUModel(pl.LightningModule):
         return loss_dict
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.weight_decay_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.weight_decay_rate)
         lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
         
         return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}

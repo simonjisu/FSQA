@@ -1,19 +1,25 @@
-stage: 'train'
-model_path: 'bert-base-uncased'
-train_file: 'all_data_train.jsonl'
-valid_file: 'all_data_valid.jsonl'
-test_file: 'all_data_test.jsonl'
-labels_file: 'labels.json'
-num_workers: 0
-max_len: 256
-lr: 0.01
-batch_size: 64
 exp_name: 'nlu'
-save_top_k: 2
-refresh_rate: 1
-n_gpus: 1
-n_epochs: 10
-num_sanity_val_steps: 0
 seed: 777
-weight_decay_rate: 0.00001
-loss_type: 'focal' # focal / ce
+data_module:
+  
+  train_file: 'all_data_train.jsonl'
+  valid_file: 'all_data_valid.jsonl'
+  test_file: 'all_data_test.jsonl'
+  labels_file: 'labels.json'
+  num_workers: 0
+  max_len: 256
+  batch_size: 64
+
+model:
+  stage: 'train'
+  model_path: 'bert-base-uncased'
+  lr: 0.01
+  weight_decay_rate: 0.00001
+  loss_type: 'focal' # focal / ce
+
+trainer:
+  save_top_k: 2
+  refresh_rate: 1
+  n_epochs: 10
+  n_gpus: 1
+  num_sanity_val_steps: 0
