@@ -100,7 +100,7 @@ class NLUModel(pl.LightningModule):
             on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
         # logging
         self.cal_metrics(outputs, targets, prefix=prefix)
-        return loss
+        return {'loss': loss}
 
     def cal_loss(self, outputs, targets):
         tags_loss = self.tags_loss(outputs['tags'], targets['tags'])
@@ -112,17 +112,20 @@ class NLUModel(pl.LightningModule):
         for k in self.outputs_keys:
             for k_sub, v in self.metrics[prefix][k](outputs[k], targets[k]).items():
                 outputs_metrics[k_sub] = v
-        self.log_dict(outputs_metrics, on_step=False, on_epoch=True, sync_dist=self.hparams.multigpu)
+
+        self.log_dict(outputs_metrics, on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu) 
 
     def training_step(self, batch, batch_idx):
-        loss = self.forward_all(batch, prefix='train_')
-        return loss
+        loss_dict = self.forward_all(batch, prefix='train_')
+        return loss_dict
 
     def validation_step(self, batch, batch_idx):
-        loss = self.forward_all(batch, prefix='val_')
+        loss_dict = self.forward_all(batch, prefix='val_')
+        return loss_dict
 
     def test_step(self, batch, batch_idx):   
-        loss = self.forward_all(batch, prefix='test_')
+        loss_dict = self.forward_all(batch, prefix='test_')
+        return loss_dict
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
