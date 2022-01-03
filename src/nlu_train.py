@@ -4,7 +4,7 @@ from multiprocessing import freeze_support
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor
 
 from pathlib import Path
 from nlu_models import NLUModel
@@ -69,6 +69,7 @@ if __name__ == '__main__':
         monitor='val_loss'
     )
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
+    lr_callback = LearningRateMonitor('step')
 
     seed_everything(seed=settings['seed'])
     trainer = pl.Trainer(
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         max_epochs=trainer_settings['n_epochs'], 
         logger=logger, 
         num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
-        callbacks=[checkpoint_callback, progress_callback],
+        callbacks=[checkpoint_callback, progress_callback, lr_callback],
         deterministic=True,
     )
     trainer.fit(
