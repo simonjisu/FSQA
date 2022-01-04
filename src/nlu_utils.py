@@ -322,7 +322,8 @@ class NLUDataModule(pl.LightningDataModule):
             batch_size=self.batch_size, 
             shuffle=shuffle, 
             num_workers=self.num_workers, 
-            collate_fn=NLUDataset.custom_collate_fn
+            collate_fn=NLUDataset.custom_collate_fn,
+            persistent_workers=True if self.num_workers > 0 else False
             )
 
     def train_dataloader(self):
