@@ -1,5 +1,0 @@
-stage: 'inference'
-model_path: 'bert-base-uncased'
-ids_file: 'all_data_ids.pickle' 
-max_len: max_len
-load_file: 'model'
