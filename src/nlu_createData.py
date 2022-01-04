@@ -642,7 +642,7 @@ def process_all_data(nlu_tokenizer, ver=''):
     save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}.jsonl')
 
 if __name__ == '__main__':
-    
+    import argparse
     # s_ENT = '[E]'
     # e_ENT = '[/E]'
     # f_ENT = lambda x: f'{s_ENT}{x}{e_ENT}'
@@ -669,12 +669,22 @@ if __name__ == '__main__':
             ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
         }
     }
+    parser = argparse.ArgumentParser(description='settings data creation')
+    parser.add_argument('-l', '--template_token_lengths', type=int, default=5,
+                        help='template_token_lengths')
+    parser.add_argument('-tk', '--top_k', type=int, default=5,
+                        help='top_k')
+    parser.add_argument('-mi', '--model_idx', type=int, default=3,
+                        help='model_idx')
+    parser.add_argument('-s', '--simple_knowledge_tag', action='store_true',
+                        help='simple_knowledge_tag')
+    args = parser.parse_args()
     
-    
-    template_token_lengths=7
-    top_k=4
-    model_idx=3
-    simple_knowledge_tag = True
+    template_token_lengths=args.template_token_lengths
+    top_k=args.top_k
+    model_idx=args.model_idx
+    simple_knowledge_tag=args.simple_knowledge_tag
+
     ver = '_simple' if simple_knowledge_tag else '_complex'
     creator = DataCreator(
         data_path, 
