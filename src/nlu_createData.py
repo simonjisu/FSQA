@@ -257,11 +257,15 @@ class DataCreator:
 
             cands = batch_cands
             m_l += 1
+
         aug_cands = []
         for c in cands:
-            for special_tkn in tokenizer.all_special_tokens:
-                c = c.replace(special_tkn, '').strip()
-            aug_cands.append(c)
+            for tkns in tokenizer(c, add_special_tokens=False)['input_ids']:
+                aug_cand = tokenizer.decode(tkns, skip_special_tokens=True)
+                aug_cands.append(aug_cand)
+        #     for special_tkn in tokenizer.all_special_tokens:
+        #         c = c.replace(special_tkn, '').strip()
+        #     aug_cands.append(c)
         # cands = [c.replace(tokenizer.pad_token, '').replace(tokenizer.sep_token, '').strip() for c in cands]
         return aug_cands
 
