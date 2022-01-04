@@ -127,7 +127,6 @@ class DataCreator:
     s_ENT = '[E]'
     e_ENT = '[/E]'
     # f_ENT = lambda x: f'[E]{x}[/E]'
-    
 
     def __init__(self, data_path, template_token_lengths=10, top_k=5, model_idx=3, simple_knowledge_tag=True):
         self.data_path = data_path
@@ -376,7 +375,8 @@ class DataCreator:
                     )
                     count += 1
                     self.progress_bar.set_description_str(desc=f'Scenario {trg_scenario} acc={target_account} len={l} # {count}')
-            return data
+        self.progress_bar.refresh()
+        return data
 
     def scenario_1(self):
         data = []

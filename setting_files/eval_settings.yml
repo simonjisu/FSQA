@@ -1,11 +1,11 @@
-exp_name: 'nlu_data2'
+exp_name: 'nlu_simple'
 seed: 777
 data_module:
   
-  train_file: 'all_data_train2.jsonl'
-  valid_file: 'all_data_valid2.jsonl'
-  test_file: 'all_data_test2.jsonl'
-  labels_file: 'labels2.json'
+  train_file: 'all_data_train_simple.jsonl'
+  valid_file: 'all_data_valid_simple.jsonl'
+  test_file: 'all_data_test_simple.jsonl'
+  labels_file: 'labels_simple.json'
   num_workers: 0
   max_len: 256
   batch_size: 64

@@ -135,3 +135,4 @@ Notebook/docs_cache
 logs/
 checkpoints/
 setting_files/t.yml
+data/all_data*

@@ -1,1 +1,0 @@
-{"intent": ["None", "IF.fact", "IF.forecast", "PAST.value"], "tags": ["O", "B-APPLY", "I-APPLY", "B-BS", "I-BS", "B-IS", "I-IS", "B-PERCENT", "I-PERCENT", "B-TIME", "I-TIME", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "B-MISC", "I-MISC"]}
