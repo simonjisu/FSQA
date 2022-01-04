@@ -2,7 +2,8 @@ import json
 import torch
 import pandas as pd
 import numpy as np
-import sys
+import os
+
 
 from copy import deepcopy
 from tqdm import tqdm
@@ -216,6 +217,7 @@ class DataCreator:
         number_of_mask_token = max_length-1
         m_l = 0
         batch_size = 256
+        n_workers = 0 if os.name == 'nt' else 4
         while m_l < number_of_mask_token:
             cands_tokens = [tokenizer.tokenize(c, truncation=True) for c in cands]
             infer_indices = []
@@ -227,7 +229,7 @@ class DataCreator:
             
             inputs = tokenizer(cands, padding=True, truncation=True, return_tensors='pt')
             ds = TensorDataset(inputs['input_ids'], inputs['token_type_ids'], inputs['attention_mask'])
-            loader = DataLoader(ds, batch_size=batch_size, pin_memory=True)
+            loader = DataLoader(ds, batch_size=batch_size, pin_memory=True, num_workers=n_workers)
             batch_cands = []
             
             self.progress_bar.reset(total=len(loader))
