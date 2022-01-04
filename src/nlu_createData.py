@@ -3,8 +3,7 @@ import torch
 import pandas as pd
 import numpy as np
 import os
-
-
+import time
 from copy import deepcopy
 from tqdm import tqdm
 from pathlib import Path
@@ -18,6 +17,7 @@ from rdflib import Graph, Literal, URIRef
 from spacy.training import biluo_tags_to_offsets, iob_to_biluo, biluo_to_iob
 from datasets import load_dataset
 from torch.utils.data import DataLoader, TensorDataset
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -553,9 +553,9 @@ class DataCreator:
 
     def create_data(self):
         data0 = self.scenario_0()
-        data1 = self.scenario_0()
-        data2 = self.scenario_0()
-        data3 = self.scenario_0()
+        data1 = self.scenario_1()
+        data2 = self.scenario_2()
+        data3 = self.scenario_3()
         all_data = data0 + data1 + data2 + data3
         print(f'total created: {len(all_data)}')
         self.post_process(all_data)
@@ -688,6 +688,7 @@ if __name__ == '__main__':
     simple_knowledge_tag=args.simple_knowledge_tag
 
     ver = '_simple' if simple_knowledge_tag else '_complex'
+    start = time.time()
     creator = DataCreator(
         data_path, 
         template_token_lengths=template_token_lengths, 
@@ -702,3 +703,6 @@ if __name__ == '__main__':
     process_all_data(nlu_tokenizer, ver=ver)
     with (data_path / f'labels{ver}.json').open('w', encoding='utf-8') as file:
         json.dump(labels_version[ver], file)
+    end = time.time()
+
+    print(f'total: {(end-start) / 60} min')
