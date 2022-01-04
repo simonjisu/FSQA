@@ -260,9 +260,9 @@ class DataCreator:
 
         aug_cands = []
         for c in cands:
-            for tkns in tokenizer(c, add_special_tokens=False)['input_ids']:
-                aug_cand = tokenizer.decode(tkns, skip_special_tokens=True)
-                aug_cands.append(aug_cand)
+            tkns = tokenizer(c, add_special_tokens=False)['input_ids']
+            aug_cand = tokenizer.decode(' '.join(tkns), skip_special_tokens=True)
+            aug_cands.append(aug_cand)
         #     for special_tkn in tokenizer.all_special_tokens:
         #         c = c.replace(special_tkn, '').strip()
         #     aug_cands.append(c)
