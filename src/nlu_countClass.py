@@ -18,8 +18,8 @@ def count(data_module, tags_counter, intent_counter, prefix='train'):
             dataset = data_module.create_dataset(data_module.test_data)
         for i in tqdm(range(len(dataset)), total=len(dataset), desc=f'Counting {prefix}'):
             x = dataset[i]
-            intent_counter.update(x['intent'])
-            tags_counter.update([x['tags']])
+            intent_counter.update([x['intent']])
+            tags_counter.update(x['tags'])
         
         
         return tags_counter, intent_counter
