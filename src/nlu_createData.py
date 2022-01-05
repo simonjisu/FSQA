@@ -371,7 +371,7 @@ class DataCreator:
                         max_length=l
                     )
                     sentences = [
-                        f' {self.f_ENT(target_account)} '.join(aug_sent.split(target_account)).replace('  ', ' ') for aug_sent in sentences
+                        f' {self.f_ENT(target_account)} '.join(aug_sent.split(target_account)).replace('  ', ' ').lower() for aug_sent in sentences
                     ]
                 for s in sentences:
                     entities = []
