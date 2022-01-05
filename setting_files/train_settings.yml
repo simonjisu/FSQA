@@ -32,3 +32,4 @@ trainer:
   n_epochs: 10
   n_gpus: 1
   num_sanity_val_steps: 0
+  strategy: 'ddp_spawn'  #  dp | ddp | ddp2 | ddp_spawn

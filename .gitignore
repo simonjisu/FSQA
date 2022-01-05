@@ -134,6 +134,6 @@ Notebook/docs_cache
 .DS_Store
 logs/
 checkpoints/
-setting_files/t.yml
+setting_files/x*.yml
 data/all_data*
 data/labels_*

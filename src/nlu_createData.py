@@ -712,11 +712,11 @@ if __name__ == '__main__':
 
     nlu_tokenizer = NLUTokenizer(hugg_path='bert-base-uncased', spacy_path='en_core_web_sm')
     train_data, valid_data, test_data = process_all_data(nlu_tokenizer)
-    addtional = 'conll' if add_conll else ''
+    addtional = '_conll' if add_conll else ''
 
-    save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_l{template_token_lengths}_tk{top_k}_{addtional}.jsonl')
-    save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_l{template_token_lengths}_tk{top_k}_{addtional}.jsonl')
-    save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_l{template_token_lengths}_tk{top_k}_{addtional}.jsonl')
+    save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_l{template_token_lengths}_tk{top_k}{addtional}.jsonl')
+    save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_l{template_token_lengths}_tk{top_k}{addtional}.jsonl')
+    save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_l{template_token_lengths}_tk{top_k}{addtional}.jsonl')
 
     with (data_path / f'labels{ver}{addtional}.json').open('w', encoding='utf-8') as file:
         json.dump(labels_version[ver], file)

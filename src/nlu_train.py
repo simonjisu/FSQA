@@ -17,7 +17,7 @@ if __name__ == '__main__':
                         help='settings_file name in the setting_files folder')
     args = parser.parse_args()
 
-    freeze_support()
+    # freeze_support()
     main_path = Path().absolute().parent
     data_path = main_path / 'data'
     setting_path = main_path / 'setting_files'
@@ -66,12 +66,14 @@ if __name__ == '__main__':
     model = NLUModel(**hparams)
 
     log_path = main_path / 'logs'
-    checkpoint_path = main_path / 'checkpoints' / settings['exp_name']
-
+    
+    # checkpoint_path = main_path / 'checkpoints' / settings['exp_name']
+    
     logger = TensorBoardLogger(save_dir=str(log_path), name=settings['exp_name'])
-
+    checkpoint_dir = Path(logger.experiment.log_dir) / "checkpoints"
+    # filepath = checkpoint_dir
     checkpoint_callback = ModelCheckpoint(
-        dirpath=str(checkpoint_path), 
+        dirpath=str(checkpoint_dir), 
         save_top_k=trainer_settings['save_top_k'],
         monitor='val_loss'
     )
@@ -85,6 +87,8 @@ if __name__ == '__main__':
         logger=logger, 
         num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
         callbacks=[checkpoint_callback, progress_callback, lr_callback],
+        log_every_n_steps=50,
+        strategy=trainer_settings['strategy']  #  dp | ddp | ddp2 | ddp_spawn
         # deterministic=True,
     )
     trainer.fit(

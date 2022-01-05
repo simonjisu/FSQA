@@ -115,10 +115,10 @@ class NLUModel(pl.LightningModule):
         self.bert_pooler = BertPooler(cfg)
         self.intent_network = nn.Linear(cfg.hidden_size, self.hparams.intent_size)
         if self.hparams.weight_dict is not None:
-            tags_weight = [self.hparams.weight_dict['tags'].get(i) for i in range(self.hparams.tags_size)]
+            tags_weight = [self.get_fn(i, 'tags') for i in range(self.hparams.tags_size)]
             tags_weight = torch.FloatTensor([1 - (c/sum(tags_weight)) for c in tags_weight])
 
-            intent_weight = [self.hparams.weight_dict['intent'].get(i) for i in range(self.hparams.intent_size)]
+            intent_weight = [self.get_fn(i, 'intent') for i in range(self.hparams.intent_size)]
             intent_weight = torch.FloatTensor([1 - (c/sum(intent_weight)) for c in intent_weight])
         else:
             tags_weight = None
@@ -138,6 +138,12 @@ class NLUModel(pl.LightningModule):
             'val_': self.create_metrics(prefix='val_'),
             'test_': self.create_metrics(prefix='test_')
         })
+
+    def get_fn(self, x, name):
+        if self.hparams.weight_dict[name].get(str(x)):
+            return self.hparams.weight_dict[name].get(str(x))
+        else:
+            return 0
             
     def contiguous(self, x):
         return x.squeeze(-1).contiguous().type_as(x)
