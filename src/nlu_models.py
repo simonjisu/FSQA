@@ -68,16 +68,16 @@ class FocalLoss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
     ignore_index: int
     label_smoothing: float
-    def __init__(self, alpha=1, gamma=2, ignore_index: int=-100, reduction: str = 'mean') -> None:
+    def __init__(self, weight=None, alpha=1, gamma=2, ignore_index: int=-100, reduction: str = 'mean') -> None:
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
         self.ignore_index = ignore_index
         self.reduction = reduction
-        self.ce = nn.CrossEntropyLoss(
-            ignore_index=self.ignore_index,
-            reduction='none')
-
+        if weight is not None:
+            self.ce = nn.CrossEntropyLoss(ignore_index=self.ignore_index, reduction='none')
+        else:
+            self.ce = nn.CrossEntropyLoss(weight=weight, ignore_index=self.ignore_index, reduction='none')
     def forward(self, inputs, targets):
         ce_loss = self.ce(inputs, targets)
 
@@ -114,14 +114,22 @@ class NLUModel(pl.LightningModule):
         self.bert_ner = BertForTokenClassification.from_pretrained(self.hparams.model_path, num_labels=self.hparams.tags_size)
         self.bert_pooler = BertPooler(cfg)
         self.intent_network = nn.Linear(cfg.hidden_size, self.hparams.intent_size)
-        
+        if self.hparams.weight_dict is not None:
+            tags_weight = [self.hparams.weight_dict['tags'].get(i) for i in range(self.hparams.tags_size)]
+            tags_weight = torch.FloatTensor([1 - (c/sum(tags_weight)) for c in tags_weight])
+
+            intent_weight = [self.hparams.weight_dict['intent'].get(i) for i in range(self.hparams.intent_size)]
+            intent_weight = torch.FloatTensor([1 - (c/sum(intent_weight)) for c in intent_weight])
+        else:
+            tags_weight = None
+            intent_weight = None
         # losses
         if self.hparams.loss_type == 'ce':
-            self.intent_loss = nn.CrossEntropyLoss()
-            self.tags_loss = nn.CrossEntropyLoss()
+            self.intent_loss = nn.CrossEntropyLoss(weight=intent_weight)
+            self.tags_loss = nn.CrossEntropyLoss(weight=tags_weight)
         elif self.hparams.loss_type == 'focal':
-            self.intent_loss = FocalLoss(alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
-            self.tags_loss = FocalLoss(alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
+            self.intent_loss = FocalLoss(weight=intent_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
+            self.tags_loss = FocalLoss(weight=tags_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
         else:
             raise NotImplementedError('Loss is not implemented')                 
         # metrics

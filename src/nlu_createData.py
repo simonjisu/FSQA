@@ -574,7 +574,7 @@ def save_as_jsonl(data_list, path):
         for line in tqdm(data_list, total=len(data_list), desc='saving'):
             file.write(json.dumps(line) + '\n')
 
-def process_all_data(nlu_tokenizer, ver=''):
+def process_all_data(nlu_tokenizer, add_conll=False, ver=''):
     
     with (data_path / 'all_data.jsonl').open('r', encoding='utf-8') as file:
         data = file.readlines()
@@ -613,39 +613,42 @@ def process_all_data(nlu_tokenizer, ver=''):
         else:
             valid_data.append(d)
 
-    # conll2003
-    conll = load_dataset('conll2003')
-    def add_conll_data(conll, nlu_tokenizer, data_list, typ='train'):
-        dataset = conll[typ]
-        feature = dataset.features['ner_tags'].feature
-        errors = 0
-        for x in tqdm(dataset, total=len(dataset), desc=f'{typ}set'):
-            text = ' '.join(x['tokens']).lower()
-            doc = nlu_tokenizer.spacy_nlp(text)
+    if add_conll:
+        # conll2003
+        conll = load_dataset('conll2003')
+        def add_conll_data(conll, nlu_tokenizer, data_list, typ='train'):
+            dataset = conll[typ]
+            feature = dataset.features['ner_tags'].feature
+            errors = 0
+            for x in tqdm(dataset, total=len(dataset), desc=f'{typ}set'):
+                text = ' '.join(x['tokens']).lower()
+                doc = nlu_tokenizer.spacy_nlp(text)
 
-            tags = list(map(feature.int2str, x['ner_tags']))
-            spacy_tokens = list(map(str, doc))
-            original_tokens = list(map(str.lower, x['tokens']))
-            mapped_tags = nlu_tokenizer.fix_tags_alignment(
-                longer_tokens=spacy_tokens, shorter_tokens=original_tokens, tags=tags
-            )
+                tags = list(map(feature.int2str, x['ner_tags']))
+                spacy_tokens = list(map(str, doc))
+                original_tokens = list(map(str.lower, x['tokens']))
+                mapped_tags = nlu_tokenizer.fix_tags_alignment(
+                    longer_tokens=spacy_tokens, shorter_tokens=original_tokens, tags=tags
+                )
 
-            entities = biluo_tags_to_offsets(doc, mapped_tags)
-            if not entities:
-                errors += 1
-                continue
+                entities = biluo_tags_to_offsets(doc, mapped_tags)
+                if not entities:
+                    errors += 1
+                    continue
 
-            d = {'text': text, 'entities': entities, 'intent': 'None'}
-            data_list.append(d)
-        print(f'{typ} errors: {errors} / {len(dataset)}')
+                d = {'text': text, 'entities': entities, 'intent': 'None'}
+                data_list.append(d)
+            print(f'{typ} errors: {errors} / {len(dataset)}')
 
-    add_conll_data(conll, nlu_tokenizer, train_data, typ='train')
-    add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation')
-    add_conll_data(conll, nlu_tokenizer, test_data, typ='test')
+        add_conll_data(conll, nlu_tokenizer, train_data, typ='train')
+        add_conll_data(conll, nlu_tokenizer, valid_data, typ='validation')
+        add_conll_data(conll, nlu_tokenizer, test_data, typ='test')
     
-    save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}.jsonl')
-    save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}.jsonl')
-    save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}.jsonl')
+    addtional = '+' if add_conll else ''
+
+    save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}{addtional}.jsonl')
+    save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}{addtional}.jsonl')
+    save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}{addtional}.jsonl')
 
 if __name__ == '__main__':
     import argparse
@@ -657,6 +660,26 @@ if __name__ == '__main__':
     data_path = main_path / 'data'
     settings_path = main_path / 'setting_files'
 
+    
+    parser = argparse.ArgumentParser(description='settings data creation')
+    parser.add_argument('-l', '--template_token_lengths', type=int, default=5,
+                        help='template_token_lengths')
+    parser.add_argument('-tk', '--top_k', type=int, default=5,
+                        help='top_k')
+    parser.add_argument('-mi', '--model_idx', type=int, default=3,
+                        help='model_idx')
+    parser.add_argument('-c', '--complex_knowledge_tag', action='store_true',
+                        help='complex_knowledge_tag')
+    parser.add_argument('-a', '--add_conll', action='store_true',
+                        help='add_conll')
+    args = parser.parse_args()
+    
+    template_token_lengths=args.template_token_lengths
+    top_k=args.top_k
+    model_idx=args.model_idx
+    complex_knowledge_tag=args.complex_knowledge_tag
+    add_conll = args.add_conll
+
     labels_version = {
         '_complex': {
             'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
@@ -665,40 +688,28 @@ if __name__ == '__main__':
                 'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
                 'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
                 'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
-            ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+            ]
         },
         '_simple': {
             'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
             'tags': [
                 'O', 'B-APPLY', 'I-APPLY', 'B-BS', 'I-BS', 'B-IS', 'I-IS',  
                 'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
-            ] + ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+            ]
         }
     }
-    parser = argparse.ArgumentParser(description='settings data creation')
-    parser.add_argument('-l', '--template_token_lengths', type=int, default=5,
-                        help='template_token_lengths')
-    parser.add_argument('-tk', '--top_k', type=int, default=5,
-                        help='top_k')
-    parser.add_argument('-mi', '--model_idx', type=int, default=3,
-                        help='model_idx')
-    parser.add_argument('-s', '--simple_knowledge_tag', action='store_true',
-                        help='simple_knowledge_tag')
-    args = parser.parse_args()
-    
-    template_token_lengths=args.template_token_lengths
-    top_k=args.top_k
-    model_idx=args.model_idx
-    simple_knowledge_tag=args.simple_knowledge_tag
+    if add_conll:
+        labels_version['_complex']['tags'] += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+        labels_version['_simple']['tags'] += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
 
-    ver = '_simple' if simple_knowledge_tag else '_complex'
+    ver = '_complex' if complex_knowledge_tag else '_simple'
     start = time.time()
     creator = DataCreator(
         data_path, 
         template_token_lengths=template_token_lengths, 
         top_k=top_k, 
         model_idx=model_idx, 
-        simple_knowledge_tag=simple_knowledge_tag
+        simple_knowledge_tag=not complex_knowledge_tag
     )
     creator.create_data()
 

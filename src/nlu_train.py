@@ -1,4 +1,5 @@
 import yaml
+import json
 import argparse
 from multiprocessing import freeze_support
 import pytorch_lightning as pl
@@ -39,7 +40,12 @@ if __name__ == '__main__':
         seed=settings['seed']
     )
 
-    
+    if model_settings.get('wegiht_file') is not None:
+        with (data_path / model_settings['weight_file']).open('r', encoding='utf-8') as file:
+            weight_dict = json.load(file)
+    else:
+        weight_dict = None
+
     hparams = {
         'stage': model_settings['stage'],
         'model_path': model_settings['model_path'], 
@@ -48,7 +54,8 @@ if __name__ == '__main__':
         'lr': model_settings['lr'],
         'weight_decay_rate': model_settings['weight_decay_rate'],
         'loss_type': model_settings['loss_type'],
-        'multigpu': True if trainer_settings['n_gpus'] > 1 else False
+        'multigpu': True if trainer_settings['n_gpus'] > 1 else False,
+        'weight_dict': weight_dict
     }
     for k, v in model_settings['schedular'].items():
         hparams[f'schedular_{k}'] = v
@@ -71,14 +78,14 @@ if __name__ == '__main__':
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
     lr_callback = LearningRateMonitor('step')
 
-    seed_everything(seed=settings['seed'])
+    # seed_everything(seed=settings['seed'])
     trainer = pl.Trainer(
         gpus=trainer_settings['n_gpus'], 
         max_epochs=trainer_settings['n_epochs'], 
         logger=logger, 
         num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
         callbacks=[checkpoint_callback, progress_callback, lr_callback],
-        deterministic=True,
+        # deterministic=True,
     )
     trainer.fit(
         model, datamodule=data_module

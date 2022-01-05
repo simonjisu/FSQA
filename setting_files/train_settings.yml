@@ -1,7 +1,6 @@
 exp_name: 'nlu_simple'
 seed: 777
-data_module:
-  
+data_module:  
   train_file: 'all_data_train_simple.jsonl'
   valid_file: 'all_data_valid_simple.jsonl'
   test_file: 'all_data_test_simple.jsonl'
@@ -13,12 +12,13 @@ data_module:
 model:
   stage: 'train'
   model_path: 'bert-base-uncased'
+  wegiht_file: 'all_data_count.json'
   lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.00001
   loss_type: 'focal' # focal / ce
   focal:
-    alpha: 1
-    gamma: 300
+    alpha: 0.95
+    gamma: 3
   schedular:
     T_0: 3
     T_up: 1
