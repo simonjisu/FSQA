@@ -12,7 +12,7 @@ data_module:
 model:
   stage: 'train'
   model_path: 'bert-base-uncased'
-  wegiht_file: 'all_data_count.json'
+  weight: 'all_data_count.json'
   lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.00001
   loss_type: 'focal' # focal / ce
