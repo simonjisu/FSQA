@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='test')
     print(intent_counter)
     print(tags_counter)
-    name = data_module_settings['train_file'].split('_')
+    name = data_module_settings['train_file'].rstrip('.jsonl').split('_')
     with (data_path / f'all_data_count_{name[4]}_{name[5]}.json').open('w', encoding='utf-8') as file:
         json.dump({
             'tags': {int(k): v for k, v in tags_counter.items()},
