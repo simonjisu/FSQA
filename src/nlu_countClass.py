@@ -19,7 +19,7 @@ def count(data_module, tags_counter, intent_counter, prefix='train'):
         for i in tqdm(range(len(dataset)), total=len(dataset), desc=f'Counting {prefix}'):
             x = dataset[i]
             intent_counter.update(x['intent'])
-            tags_counter.update(x['tags'])
+            tags_counter.update([x['tags']])
         
         
         return tags_counter, intent_counter
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     tags_counter = Counter()
     tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='train')
     tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='valid')
-    tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='test')
+    # tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='test')
     print(intent_counter)
     print(tags_counter)
     with (data_path / 'all_data_count.json').open('w', encoding='utf-8') as file:
