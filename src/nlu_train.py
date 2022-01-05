@@ -87,7 +87,7 @@ if __name__ == '__main__':
         logger=logger, 
         num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
         callbacks=[checkpoint_callback, progress_callback, lr_callback],
-        log_every_n_steps=50,
+        log_every_n_steps=trainer_settings['log_every_n_steps'],
         strategy=trainer_settings['strategy']  #  dp | ddp | ddp2 | ddp_spawn
         # deterministic=True,
     )

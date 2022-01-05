@@ -33,3 +33,4 @@ trainer:
   n_gpus: 1
   num_sanity_val_steps: 0
   strategy: 'ddp_spawn'  #  dp | ddp | ddp2 | ddp_spawn
+  log_every_n_steps: 25
