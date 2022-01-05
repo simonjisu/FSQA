@@ -222,7 +222,7 @@ class DataCreator:
             cands_tokens = [tokenizer.tokenize(c, truncation=True) for c in cands]
             infer_indices = []
             for c in cands_tokens:
-                mask_idx = list(np.arange(len(c))[np.array(c) == '[MASK]'])
+                mask_idx = list(np.arange(len(c))[np.array(c) == tokenizer.mask_token])
                 choosed_idx = np.random.choice(mask_idx)
                 infer_indices.append(choosed_idx)
             # batch output
