@@ -136,3 +136,4 @@ logs/
 checkpoints/
 setting_files/t.yml
 data/all_data*
+data/labels_*
