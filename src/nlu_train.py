@@ -40,7 +40,7 @@ if __name__ == '__main__':
         seed=settings['seed']
     )
 
-    if model_settings.get('wegiht_file') is not None:
+    if model_settings.get('weight_file') is not None:
         with (data_path / model_settings['weight_file']).open('r', encoding='utf-8') as file:
             weight_dict = json.load(file)
     else:
