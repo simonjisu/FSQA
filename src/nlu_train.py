@@ -69,7 +69,11 @@ if __name__ == '__main__':
     
     # checkpoint_path = main_path / 'checkpoints' / settings['exp_name']
     
-    logger = TensorBoardLogger(save_dir=str(log_path), name=settings['exp_name'])
+    logger = TensorBoardLogger(
+        save_dir=str(log_path), 
+        name=settings['exp_name'],
+        version=data_module_settings['train_file'].rstrip('.jsonl').split('_', 3)[-1]    
+    )
     checkpoint_dir = Path(logger.experiment.log_dir) / "checkpoints"
     # filepath = checkpoint_dir
     checkpoint_callback = ModelCheckpoint(
@@ -80,7 +84,7 @@ if __name__ == '__main__':
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
     lr_callback = LearningRateMonitor('step')
 
-    # seed_everything(seed=settings['seed'])
+    seed_everything(seed=settings['seed'])
     trainer = pl.Trainer(
         gpus=trainer_settings['n_gpus'], 
         max_epochs=trainer_settings['n_epochs'], 
@@ -88,8 +92,8 @@ if __name__ == '__main__':
         num_sanity_val_steps=trainer_settings['num_sanity_val_steps'],
         callbacks=[checkpoint_callback, progress_callback, lr_callback],
         log_every_n_steps=trainer_settings['log_every_n_steps'],
-        strategy=trainer_settings['strategy']  #  dp | ddp | ddp2 | ddp_spawn
-        # deterministic=True,
+        strategy=trainer_settings['strategy'],  #  dp | ddp | ddp2 | ddp_spawn
+        deterministic=True,
     )
     trainer.fit(
         model, datamodule=data_module
