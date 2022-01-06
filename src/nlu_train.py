@@ -72,7 +72,7 @@ if __name__ == '__main__':
     logger = TensorBoardLogger(
         save_dir=str(log_path), 
         name=settings['exp_name'],
-        version=data_module_settings['train_file'].rstrip('.jsonl').split('_', 3)[-1]    
+        version=args.file.rstrip('.yml').split('_', 1)[-1]
     )
     checkpoint_dir = Path(logger.experiment.log_dir) / "checkpoints"
     # filepath = checkpoint_dir
