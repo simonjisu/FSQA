@@ -85,7 +85,9 @@ if __name__ == '__main__':
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
     lr_callback = LearningRateMonitor('step')
 
-    seed_everything(seed=settings['seed'])
+    if trainer_settings['deterministic']:
+        seed_everything(seed=settings['seed'], workers=True)
+        deterministic = trainer_settings['deterministic']
     trainer = pl.Trainer(
         gpus=trainer_settings['n_gpus'], 
         max_epochs=trainer_settings['n_epochs'], 
@@ -94,7 +96,7 @@ if __name__ == '__main__':
         callbacks=[checkpoint_callback, progress_callback, lr_callback],
         log_every_n_steps=trainer_settings['log_every_n_steps'],
         strategy=trainer_settings['strategy'],  #  dp | ddp | ddp2 | ddp_spawn
-        deterministic=True,
+        deterministic=deterministic,
     )
     trainer.fit(
         model, datamodule=data_module

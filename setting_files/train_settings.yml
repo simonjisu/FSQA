@@ -1,5 +1,5 @@
 exp_name: 'nlu_simple'
-seed: 777
+seed: 1234
 data_module:  
   train_file: 'all_data_test_simple_l7_tk3_3.jsonl'
   valid_file: 'all_data_valid_simple_l7_tk3_3.jsonl'
@@ -34,3 +34,4 @@ trainer:
   num_sanity_val_steps: 0
   strategy: 'ddp_spawn'  #  dp | ddp | ddp2 | ddp_spawn
   log_every_n_steps: 25
+  deterministic: true
