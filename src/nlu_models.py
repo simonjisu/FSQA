@@ -200,16 +200,14 @@ class NLUModel(pl.LightningModule):
 
     def forward_all(self, batch, prefix='train_'):
         outputs = self(**batch)
-        targets = {
-            'tags': batch['tags'].view(-1),    # (B*T, )
-            'intent': batch['intent'],         # (B, )
-        }
         loss = self.cal_loss(outputs)
-        self.log(f'{prefix}loss', loss, 
-            on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
-        # logging
-        self.cal_metrics(outputs, targets, prefix=prefix)
-        return {'loss': loss}
+        self.log(f'{prefix}loss', loss, on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
+        
+        return {
+            'loss': loss, 
+            'metric_tags': (outputs['tags_pred'], batch['tags'].view(-1)),    # (B*T, )
+            'metric_intent': (outputs['intent_pred'], batch['intent']),    # (B, )
+        }
 
     def cal_loss(self, outputs):
         # tags_loss = self.tags_loss(outputs['tags'], targets['tags'])
@@ -218,14 +216,26 @@ class NLUModel(pl.LightningModule):
         intent_loss = outputs['intent_loss']
         return tags_loss + intent_loss
 
-    def cal_metrics(self, outputs, targets, prefix='train_'):
+    def cal_metrics(self, preds, targets, prefix='train_'):
         outputs_metrics = defaultdict()
         for k in self.outputs_keys:
-            for k_sub, v in self.metrics[prefix][k](outputs[k+'_pred'], targets[k]).items():
+            for k_sub, v in self.metrics[prefix][k](preds[k], targets[k]).items():
                 outputs_metrics[k_sub] = v
 
         self.log_dict(outputs_metrics, on_step=False, on_epoch=True, sync_dist=self.hparams.multigpu)
-        self.reset_metrics(prefix)
+        
+    def _preprocess_for_metrics(self, step_outputs):
+        preds, targets = defaultdict(list), defaultdict(list)
+        for o in step_outputs:
+            preds['tags'].append(o['metric_tags'][0])
+            preds['intent'].append(o['metric_intent'][0])
+            targets['tags'].append(o['metric_tags'][1])
+            targets['intent'].append(o['metric_intent'][1])
+
+        for k in self.outputs_keys:
+            preds[k] = torch.cat(preds[k])
+            targets[k] = torch.cat(targets[k])
+        return preds, targets
 
     def reset_metrics(self, prefix):
         for k in self.outputs_keys:
@@ -235,13 +245,28 @@ class NLUModel(pl.LightningModule):
         loss_dict = self.forward_all(batch, prefix='train_')
         return loss_dict
 
+    def training_epoch_end(self, step_outputs):
+        preds, targets = self._preprocess_for_metrics(step_outputs)
+        self.cal_metrics(preds, targets, prefix='train_')
+        self.reset_metrics(prefix='train_')
+
     def validation_step(self, batch, batch_idx):
         loss_dict = self.forward_all(batch, prefix='val_')
         return loss_dict
 
+    def validation_epoch_end(self, step_outputs):
+        preds, targets = self._preprocess_for_metrics(step_outputs)
+        self.cal_metrics(preds, targets, prefix='val_')
+        self.reset_metrics(prefix='val_')
+
     def test_step(self, batch, batch_idx):   
         loss_dict = self.forward_all(batch, prefix='test_')
         return loss_dict
+
+    def validation_epoch_end(self, step_outputs):
+        preds, targets = self._preprocess_for_metrics(step_outputs)
+        self.cal_metrics(preds, targets, prefix='test_')
+        self.reset_metrics(prefix='test_')
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
