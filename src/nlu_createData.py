@@ -586,7 +586,7 @@ def process_all_data(nlu_tokenizer, add_conll=False):
         all_data = []
         for line in tqdm(data, total=len(data), desc='loading'):
             all_data.append(json.loads(line))
-    np.random.shuffle(all_data)
+    # np.random.shuffle(all_data)
     # custom data
     # split to train/valid & test
     train_valid_data = []
