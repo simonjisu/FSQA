@@ -97,6 +97,7 @@ if __name__ == '__main__':
         log_every_n_steps=trainer_settings['log_every_n_steps'],
         strategy=trainer_settings['strategy'],  #  dp | ddp | ddp2 | ddp_spawn
         deterministic=deterministic,
+        gradient_clip_val=trainer_settings['gradient_clip_val']
     )
     trainer.fit(
         model, datamodule=data_module
