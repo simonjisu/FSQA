@@ -171,10 +171,10 @@ class NLUModel(pl.LightningModule):
         )
         return outputs
 
-    def _forward_tags(self, last_hidden_state, tags=None):
+    def _forward_tags(self, last_hidden_state, mask=None, tags=None):
         emissions = self.linear_crf(last_hidden_state)  # (B, T, tags_size)
         if tags is not None:
-            tags_loss = -1*self.crf(emissions, tags=tags, reduction='mean')  # crf returns negative likelihood loss
+            tags_loss = -1*self.crf(emissions, tags=tags, mask=mask, reduction='mean')  # crf returns negative likelihood loss
             tags_prediction = torch.LongTensor(self.crf.decode(emissions)).to(emissions.device)
         else:
             tags_loss = None
@@ -197,6 +197,7 @@ class NLUModel(pl.LightningModule):
         # tags
         tags_loss, tags_prediction = self._forward_tags(
             last_hidden_state=outputs.last_hidden_state, 
+            mask=attention_mask,
             tags=tags
         )
         # intent
