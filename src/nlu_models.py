@@ -316,8 +316,14 @@ class NLUModel(pl.LightningModule):
             )
         else:
             raise NotImplementedError('No schedular')
+        scheduler = {
+            'scheduler': lr_schedulers,
+            'interval': 'step',
+            'frequency': 1
+        }
 
-        return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
+
+        return {'optimizer': optimizer, 'lr_scheduler': scheduler}
 
     def predict(self, input_ids, token_type_ids, attention_mask):
         outputs = self.forward(input_ids, token_type_ids, attention_mask)
@@ -330,7 +336,9 @@ class NLUModel(pl.LightningModule):
 
     @property
     def num_training_steps(self) -> int:
-        """Total training steps inferred from datamodule and devices."""
+        """Total training steps inferred from datamodule and devices.
+        https://github.com/PyTorchLightning/pytorch-lightning/issues/10760
+        """
         if self.trainer.num_training_batches != float('inf'):
             dataset_size = self.trainer.num_training_batches
         else:
