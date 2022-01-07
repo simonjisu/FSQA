@@ -204,9 +204,8 @@ class NLUTokenizer:
 
         return labels
 
-    @classmethod
-    def pad_tags(cls, tags, pad_idx):
-        padded_tags = [pad_idx] + tags + [pad_idx]
+    def pad_tags(self, tags):
+        padded_tags = [self.bert.cls_token_id] + tags + [self.bert.sep_token_id]
         return padded_tags
 
 class NLUDataset(Dataset):
@@ -224,7 +223,6 @@ class NLUDataset(Dataset):
         self.tags2id = tags2id
         self.intents2id = intents2id
         self.max_len = max_len
-        self.pad_offset = True
         self.tag_type = tag_type
 
     def __getitem__(self, index):
@@ -232,7 +230,8 @@ class NLUDataset(Dataset):
         ents = self.data[index]['entities']
         intent = self.data[index]['intent']
 
-        bert_offset_mapping = self.tokenizer.bert(text, add_special_tokens=False, return_offsets_mapping=True)['offset_mapping']
+        bert_offset_mapping = self.tokenizer.bert(
+            text, add_special_tokens=False, return_offsets_mapping=True)['offset_mapping']
         tags = self.tokenizer.offset_mapping_to_tags(offset_mapping=bert_offset_mapping, ents=ents)
         tags = biluo_to_iob(tags)
         
@@ -243,7 +242,7 @@ class NLUDataset(Dataset):
             max_length=self.max_len
         )
         numeric_tags = list(map(self.tags2id.get, tags))
-        padded_tags = self.tokenizer.pad_tags(numeric_tags, pad_idx=self.tags2id.get('O'))
+        padded_tags = self.tokenizer.pad_tags(numeric_tags)
         intent = self.intents2id.get(intent)
         
         item = {k: v for k, v in bert_encodes.items()}
@@ -291,8 +290,8 @@ class NLUDataModule(pl.LightningDataModule):
         with Path(self.labels_path).open('r', encoding='utf-8') as file:
             labels = json.load(file)
 
-        self.tags2id = {v: k for k, v in enumerate(labels['tags'])}
-        self.intents2id = {v: k for k, v in enumerate(labels['intent'])}
+        self.tags2id = labels['tags']
+        self.intents2id = labels['intent']
 
         self.batch_size = batch_size
         self.max_len = max_len

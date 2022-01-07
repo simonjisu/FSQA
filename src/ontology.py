@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pyvis.network import Network
 from collections import defaultdict
-from .embeddedML import LinearRegression
+from embeddedML import LinearRegression
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -198,7 +198,7 @@ class GraphDrawer():
             font_color=self.font_color, 
             heading=self.heading, 
             notebook=self.notebook
-            )
+        )
         for src, link, trg in sparql_results:
             src = self.convert_to_string(src)
             link = self.convert_to_string(link)

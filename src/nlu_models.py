@@ -3,11 +3,12 @@ import torch.nn as nn
 import torchmetrics
 import pytorch_lightning as pl
 from collections import defaultdict
-from transformers import BertConfig, BertForTokenClassification
+from transformers import BertConfig, BertModel
 
 import math
 from torch.nn.modules.loss import _WeightedLoss
 from torch.optim.lr_scheduler import _LRScheduler
+from torchcrf import CRF
 
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
     def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
@@ -78,6 +79,7 @@ class FocalLoss(_WeightedLoss):
             self.ce = nn.CrossEntropyLoss(ignore_index=self.ignore_index, reduction='none')
         else:
             self.ce = nn.CrossEntropyLoss(weight=weight, ignore_index=self.ignore_index, reduction='none')
+
     def forward(self, inputs, targets):
         ce_loss = self.ce(inputs, targets)
 
@@ -111,27 +113,33 @@ class NLUModel(pl.LightningModule):
         self.outputs_keys = ['tags', 'intent']
         # Networks
         cfg = BertConfig()
-        self.bert_ner = BertForTokenClassification.from_pretrained(self.hparams.model_path, num_labels=self.hparams.tags_size)
-        self.bert_pooler = BertPooler(cfg)
+        self.bert = BertModel.from_pretrained(self.hparams.model_path)
+        self.linear_crf = nn.Linear(cfg.hidden_size, self.hparams.tags_size)
+        self.crf = CRF(num_tags=self.hparams.tags_size, batch_first=True)
         self.intent_network = nn.Linear(cfg.hidden_size, self.hparams.intent_size)
-        if self.hparams.weight_dict is not None:
-            tags_weight = [self.get_fn(i, 'tags') for i in range(self.hparams.tags_size)]
-            tags_weight = torch.FloatTensor([1 - (c/sum(tags_weight)) for c in tags_weight])
 
-            intent_weight = [self.get_fn(i, 'intent') for i in range(self.hparams.intent_size)]
-            intent_weight = torch.FloatTensor([1 - (c/sum(intent_weight)) for c in intent_weight])
+        # if self.hparams.weight_dict is not None:
+        #     tags_weight = [self.get_fn(i, 'tags') for i in range(self.hparams.tags_size)]
+        #     tags_weight = torch.FloatTensor([1 - (c/sum(tags_weight)) for c in tags_weight])
+
+        #     intent_weight = [self.get_fn(i, 'intent') for i in range(self.hparams.intent_size)]
+        #     intent_weight = torch.FloatTensor([1 - (c/sum(intent_weight)) for c in intent_weight])
+        # else:
+        #     tags_weight = None
+        #     intent_weight = None
+        # # losses
+        # if self.hparams.loss_type == 'ce':
+        #     self.intent_loss = nn.CrossEntropyLoss(weight=intent_weight)
+        #     self.tags_loss = nn.CrossEntropyLoss(weight=tags_weight)
+        # elif self.hparams.loss_type == 'focal':
+        #     self.intent_loss = FocalLoss(weight=intent_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
+        #     self.tags_loss = FocalLoss(weight=tags_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
+        # else:
+        #     raise NotImplementedError('Loss is not implemented')
+        if self.hparams.loss_type == 'ce': 
+            self.intent_loss_function = nn.CrossEntropyLoss()
         else:
-            tags_weight = None
-            intent_weight = None
-        # losses
-        if self.hparams.loss_type == 'ce':
-            self.intent_loss = nn.CrossEntropyLoss(weight=intent_weight)
-            self.tags_loss = nn.CrossEntropyLoss(weight=tags_weight)
-        elif self.hparams.loss_type == 'focal':
-            self.intent_loss = FocalLoss(weight=intent_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
-            self.tags_loss = FocalLoss(weight=tags_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
-        else:
-            raise NotImplementedError('Loss is not implemented')                 
+            self.intent_loss_function = FocalLoss(alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
         # metrics
         self.metrics = nn.ModuleDict({
             'train_': self.create_metrics(prefix='train_'),
@@ -156,63 +164,78 @@ class NLUModel(pl.LightningModule):
         return m
 
     def _forward_bert(self, input_ids, token_type_ids, attention_mask):
-        outputs = self.bert_ner.bert(
+        outputs = self.bert(
             input_ids=input_ids,
             token_type_ids=token_type_ids,
             attention_mask=attention_mask,
         )
-        return outputs.last_hidden_state
+        return outputs
 
-    def _forward_tags(self, last_hidden_state):
-        tags_outputs = self.bert_ner.dropout(last_hidden_state)
-        tags_logits = self.bert_ner.classifier(tags_outputs)
-        return tags_logits.view(-1, self.hparams.tags_size)
+    def _forward_tags(self, last_hidden_state, tags=None):
+        emissions = self.linear_crf(last_hidden_state)  # (B, T, tags_size)
+        if tags is not None:
+            tags_loss = -1*self.crf(emissions, tags=tags)  # crf returns negative likelihood loss
+            tags_prediction = torch.LongTensor(self.crf.decode(emissions))
+        else:
+            tags_loss = None
+            tags_prediction = torch.LongTensor(self.crf.decode(emissions))
+        return tags_loss, tags_prediction
 
-    def _forward_intent(self, pooled_outputs):
+    def _forward_intent(self, pooled_outputs, intent=None):
         intent_logits = self.intent_network(pooled_outputs)
-        return intent_logits
+        if intent is not None:
+            intent_loss = self.intent_loss_function(intent_logits, intent)
+            intent_prediction = intent_logits.argmax(-1)
+        else:
+            intent_loss = None
+            intent_prediction = intent_logits.argmax(-1)
+        return intent_loss, intent_prediction
 
-    def forward(self, input_ids, token_type_ids, attention_mask):
+    def forward(self, input_ids, token_type_ids, attention_mask, tags=None, intent=None):
+        # bert
+        outputs = self._forward_bert(input_ids, token_type_ids, attention_mask)
         # tags
-        last_hidden_state = self._forward_bert(input_ids, token_type_ids, attention_mask)
-        tags_logits = self._forward_tags(last_hidden_state)
-
+        tags_loss, tags_prediction = self._forward_tags(
+            last_hidden_state=outputs.last_hidden_state, 
+            tags=tags
+        )
         # intent
-        pooled_outputs = self.bert_pooler(last_hidden_state)
-        intent_logits = self._forward_intent(pooled_outputs)
+        intent_loss, intent_prediction = self._forward_intent(
+            pooled_outputs=outputs.pooler_output,
+            intent=intent
+        )
 
         return {
-            'tags': tags_logits,       # (B*max_len, tags_size)
-            'intent': intent_logits,   # (B, intent_size)
+            'tags_loss': tags_loss,       # (B,)
+            'intent_loss': intent_loss,      # (B,)
+            'tags_pred': tags_prediction.view(-1),  # (B*T,)
+            'intent_pred': intent_prediction,      # (B,)
         }
 
     def forward_all(self, batch, prefix='train_'):
-        outputs = self.forward(
-            input_ids=batch['input_ids'], 
-            token_type_ids=batch['token_type_ids'], 
-            attention_mask=batch['attention_mask'], 
-        )
-
+        outputs = self(**batch)
         targets = {
-            'tags': batch['tags'].view(-1),    # (B*max_len, )
+            'tags': batch['tags'].view(-1),    # (B*T, )
             'intent': batch['intent'],         # (B, )
         }
-        loss = self.cal_loss(outputs, targets)
+        loss = self.cal_loss(outputs)
         self.log(f'{prefix}loss', loss, 
             on_step=True, on_epoch=True, sync_dist=self.hparams.multigpu)
         # logging
         self.cal_metrics(outputs, targets, prefix=prefix)
         return {'loss': loss}
 
-    def cal_loss(self, outputs, targets):
-        tags_loss = self.tags_loss(outputs['tags'], targets['tags'])
-        intent_loss = self.intent_loss(outputs['intent'], targets['intent'])
+    def cal_loss(self, outputs):
+        # tags_loss = self.tags_loss(outputs['tags'], targets['tags'])
+        # intent_loss = self.intent_loss(outputs['intent'], targets['intent'])
+        tags_loss = outputs['tags_loss']
+        intent_loss = outputs['intent_loss']
         return tags_loss + intent_loss
 
     def cal_metrics(self, outputs, targets, prefix='train_'):
         outputs_metrics = defaultdict()
         for k in self.outputs_keys:
-            for k_sub, v in self.metrics[prefix][k](outputs[k], targets[k]).items():
+            for k_sub, v in self.metrics[prefix][k](outputs[k+'_pred'], targets[k]).items():
                 outputs_metrics[k_sub] = v
 
         self.log_dict(outputs_metrics, on_step=False, on_epoch=True, sync_dist=self.hparams.multigpu) 

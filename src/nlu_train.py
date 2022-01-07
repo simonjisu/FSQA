@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     if trainer_settings['deterministic']:
         seed_everything(seed=settings['seed'], workers=True)
-        deterministic = trainer_settings['deterministic']
+    deterministic = trainer_settings['deterministic']
     trainer = pl.Trainer(
         gpus=trainer_settings['n_gpus'], 
         max_epochs=trainer_settings['n_epochs'], 

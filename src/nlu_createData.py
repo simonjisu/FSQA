@@ -676,31 +676,12 @@ if __name__ == '__main__':
     model_idx=args.model_idx
     complex_knowledge_tag=args.complex_knowledge_tag
     add_conll = args.add_conll
-
-    labels_version = {
-        '_complex': {
-            'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
-            'tags': [
-                'O', 'B-APPLY', 'I-APPLY', 
-                'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
-                'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
-                'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
-            ]
-        },
-        '_simple': {
-            'intent': ['None', 'IF.fact', 'IF.forecast', 'PAST.value'],
-            'tags': [
-                'O', 'B-APPLY', 'I-APPLY', 'B-BS', 'I-BS', 'B-IS', 'I-IS',  
-                'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
-            ]
-        }
-    }
-    if add_conll:
-        labels_version['_complex']['tags'] += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
-        labels_version['_simple']['tags'] += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
-
+    
     ver = '_complex' if complex_knowledge_tag else '_simple'
+    addtional = '_conll' if add_conll else ''
+    nlu_tokenizer = NLUTokenizer(hugg_path='bert-base-uncased', spacy_path='en_core_web_sm')
     start = time.time()
+
     creator = DataCreator(
         data_path, 
         template_token_lengths=template_token_lengths, 
@@ -709,15 +690,48 @@ if __name__ == '__main__':
         simple_knowledge_tag=not complex_knowledge_tag
     )
     creator.create_data()
-
-    nlu_tokenizer = NLUTokenizer(hugg_path='bert-base-uncased', spacy_path='en_core_web_sm')
-    train_data, valid_data, test_data = process_all_data(nlu_tokenizer)
-    addtional = '_conll' if add_conll else ''
-
+    train_data, valid_data, test_data = process_all_data(nlu_tokenizer)    
     save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
     save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
     save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
+    
+    tags = {
+        tkn: i for tkn, i in (zip(nlu_tokenizer.bert.all_special_tokens, nlu_tokenizer.bert.all_special_ids))
+    }
 
+    if complex_knowledge_tag:
+        addtional_tags = [
+            'O', 'B-APPLY', 'I-APPLY', 
+            'B-BS.Value', 'I-BS.Value', 'B-IS.Value', 'I-IS.Value', 
+            'B-BS.Ratio', 'I-BS.Ratio', 'B-IS.Ratio', 'I-IS.Ratio',  
+            'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
+        ]
+    else:
+        addtional_tags = [
+            'O', 'B-APPLY', 'I-APPLY', 'B-BS', 'I-BS', 'B-IS', 'I-IS',  
+            'B-PERCENT', 'I-PERCENT', 'B-TIME', 'I-TIME'
+        ]
+    
+    if add_conll:
+        addtional_tags += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+        addtional_tags += ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    
+    for i, t in enumerate(addtional_tags, len(tags)):
+        tags[t] = i
+
+    intent = {v: k for k, v in enumerate(['None', 'IF.fact', 'IF.forecast', 'PAST.value'])}
+
+    labels_version = {
+        '_complex': {
+            'intent': intent,
+            'tags': tags
+        },
+        '_simple': {
+            'intent': intent,
+            'tags': tags
+        }
+    }
+    
     with (data_path / f'labels{ver}{addtional}.json').open('w', encoding='utf-8') as file:
         json.dump(labels_version[ver], file)
     end = time.time()

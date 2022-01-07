@@ -12,7 +12,7 @@ data_module:
 model:
   stage: 'train'
   model_path: 'bert-base-uncased'
-  weight_file: 'all_data_count_l7_tk3_3.json'
+  weight_file: 'all_data_count_l7_tk3_0.json'
   lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.00001
   loss_type: 'focal' # focal / ce
@@ -34,4 +34,4 @@ trainer:
   num_sanity_val_steps: 0
   strategy: 'ddp_spawn'  #  dp | ddp | ddp2 | ddp_spawn
   log_every_n_steps: 25
-  deterministic: true
+  deterministic: false
