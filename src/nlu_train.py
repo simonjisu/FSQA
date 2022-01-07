@@ -102,5 +102,6 @@ if __name__ == '__main__':
     trainer.fit(
         model, datamodule=data_module
     )
-    trainer.test(ckpt_path='best', datamodule=data_module)
-
+    test_results = trainer.test(ckpt_path='best', datamodule=data_module)
+    with Path(logger.experiment.log_dir).open('w', encoding='utf-8') as file:
+        json.dump(test_results, file)
