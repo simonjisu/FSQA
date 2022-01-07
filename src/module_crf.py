@@ -180,8 +180,8 @@ class CRF(nn.Module):
 
         seq_length, batch_size = tags.shape
         idx = torch.arange(batch_size).to(emissions.device)
-        mask = mask.float()
-
+        mask = mask.float().to(emissions.device)
+        
         # Start transition score and first emission
         # shape: (batch_size,)
         score = self.start_transitions[tags[0]]
