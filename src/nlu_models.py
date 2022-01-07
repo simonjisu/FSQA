@@ -313,7 +313,7 @@ class NLUModel(pl.LightningModule):
             lr_schedulers = torch.optim.lr_scheduler.ExponentialLR(
                 optimizer, gamma=self.hparams.schedular_gamma
             )
-        elif self.hparams.schedular_type == 'ExponentialLR':
+        elif self.hparams.schedular_type == 'WarmupLinearSchedule':
             lr_schedulers = WarmupLinearSchedule(optimizer, self.hparams.schedular_warmup_steps, -1)
         else:
             raise NotImplementedError('No schedular')
