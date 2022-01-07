@@ -40,11 +40,11 @@ if __name__ == '__main__':
         seed=settings['seed']
     )
 
-    if model_settings.get('weight_file') is not None:
-        with (data_path / model_settings['weight_file']).open('r', encoding='utf-8') as file:
-            weight_dict = json.load(file)
-    else:
-        weight_dict = None
+    # if model_settings.get('weight_file') is not None:
+    #     with (data_path / model_settings['weight_file']).open('r', encoding='utf-8') as file:
+    #         weight_dict = json.load(file)
+    # else:
+    #     weight_dict = None
 
     hparams = {
         'stage': model_settings['stage'],
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         'weight_decay_rate': model_settings['weight_decay_rate'],
         'loss_type': model_settings['loss_type'],
         'multigpu': True if trainer_settings['n_gpus'] > 1 else False,
-        'weight_dict': weight_dict
+        # 'weight_dict': weight_dict
     }
     for k, v in model_settings['schedular'].items():
         hparams[f'schedular_{k}'] = v

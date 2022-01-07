@@ -20,11 +20,12 @@ model:
     alpha: 0.95
     gamma: 3
   schedular:
-    T_0: 3
+    type: 'CosineAnnealingWarmUpRestarts' # ExponentialLR / CosineAnnealingWarmUpRestarts
+    T_0: 10
     T_up: 1
     T_mult: 1
-    eta_max: 0.01
-    gamma: 0.75
+    eta_max: 0.0001
+    gamma: 0.95
 
 trainer:
   save_top_k: 2

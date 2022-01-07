@@ -91,21 +91,6 @@ class FocalLoss(_WeightedLoss):
         else:
             return F_loss
 
-class BertPooler(nn.Module):
-    def __init__(self, config):
-        """from https://github.com/huggingface/transformers/blob/v4.15.0/src/transformers/models/bert/modeling_bert.py#L627"""
-        super().__init__()
-        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
-        self.activation = nn.Tanh()
-
-    def forward(self, hidden_states):
-        # We "pool" the model by simply taking the hidden state corresponding
-        # to the first token.
-        first_token_tensor = hidden_states[:, 0]
-        pooled_output = self.dense(first_token_tensor)
-        pooled_output = self.activation(pooled_output)
-        return pooled_output
-
 class NLUModel(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
@@ -147,11 +132,11 @@ class NLUModel(pl.LightningModule):
             'test_': self.create_metrics(prefix='test_')
         })
 
-    def get_fn(self, x, name):
-        if self.hparams.weight_dict[name].get(str(x)):
-            return self.hparams.weight_dict[name].get(str(x))
-        else:
-            return 0
+    # def get_fn(self, x, name):
+    #     if self.hparams.weight_dict[name].get(str(x)):
+    #         return self.hparams.weight_dict[name].get(str(x))
+    #     else:
+    #         return 0
             
     def contiguous(self, x):
         return x.squeeze(-1).contiguous().type_as(x)
@@ -259,15 +244,22 @@ class NLUModel(pl.LightningModule):
             lr=self.hparams.lr, 
             weight_decay=self.hparams.weight_decay_rate
         )
+        if self.hparams.schedular_type == 'CosineAnnealingWarmUpRestarts':
         # lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
-        lr_schedulers = CosineAnnealingWarmUpRestarts(
-            optimizer, 
-            T_0=self.hparams.schedular_T_0, 
-            T_mult=self.hparams.schedular_T_mult, 
-            eta_max=self.hparams.schedular_eta_max, 
-            T_up=self.hparams.schedular_T_up, 
-            gamma=self.hparams.schedular_gamma
-        )
+            lr_schedulers = CosineAnnealingWarmUpRestarts(
+                optimizer, 
+                T_0=self.hparams.schedular_T_0, 
+                T_mult=self.hparams.schedular_T_mult, 
+                eta_max=self.hparams.schedular_eta_max, 
+                T_up=self.hparams.schedular_T_up, 
+                gamma=self.hparams.schedular_gamma
+            )
+        elif self.hparams.schedular_type == 'ExponentialLR':
+            lr_schedulers = torch.optim.lr_scheduler.ExponentialLR(
+                optimizer, gamma=self.hparams.schedular_gamma
+            )
+        else:
+            raise NotImplementedError('No schedular')
 
         return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
 
