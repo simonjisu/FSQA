@@ -205,7 +205,8 @@ class NLUTokenizer:
         return labels
 
     def pad_tags(self, tags):
-        padded_tags = [self.bert.cls_token_id] + tags + [self.bert.sep_token_id]
+        # padded_tags = [self.bert.cls_token_id] + tags + [self.bert.sep_token_id]
+        padded_tags = [self.bert.pad_token_id] + tags + [self.bert.pad_token_id]
         return padded_tags
 
 class NLUDataset(Dataset):
