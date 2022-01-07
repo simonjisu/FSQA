@@ -579,14 +579,15 @@ def save_as_jsonl(data_list, path):
         for line in tqdm(data_list, total=len(data_list), desc='saving'):
             file.write(json.dumps(line) + '\n')
 
-def process_all_data(nlu_tokenizer, add_conll=False):
+def process_all_data(nlu_tokenizer, random=False, add_conll=False):
     
     with (data_path / 'all_data.jsonl').open('r', encoding='utf-8') as file:
         data = file.readlines()
         all_data = []
         for line in tqdm(data, total=len(data), desc='loading'):
             all_data.append(json.loads(line))
-    # np.random.shuffle(all_data)
+    if random:
+        np.random.shuffle(all_data)
     # custom data
     # split to train/valid & test
     train_valid_data = []
@@ -675,6 +676,8 @@ if __name__ == '__main__':
                         help='add_conll')
     parser.add_argument('-na', '--no_aug', action='store_true',
                         help='no_aug')
+    parser.add_argument('-rd', '--random', action='store_true',
+                        help='random')
     args = parser.parse_args()
     
     template_token_lengths=args.template_token_lengths
@@ -683,6 +686,7 @@ if __name__ == '__main__':
     complex_knowledge_tag=args.complex_knowledge_tag
     add_conll = args.add_conll
     no_aug = args.no_aug
+    random = args.random
     
     ver = '_complex' if complex_knowledge_tag else '_simple'
     addtional = '_conll' if add_conll else ''
@@ -698,7 +702,7 @@ if __name__ == '__main__':
         no_aug=no_aug
     )
     creator.create_data()
-    train_data, valid_data, test_data = process_all_data(nlu_tokenizer)    
+    train_data, valid_data, test_data = process_all_data(nlu_tokenizer, random=random)    
     save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
     save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
     save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')

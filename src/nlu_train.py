@@ -106,5 +106,5 @@ if __name__ == '__main__':
         model, datamodule=data_module
     )
     test_results = trainer.test(ckpt_path='best', datamodule=data_module)
-    with Path(logger.experiment.log_dir / 'test_res.json').open('w', encoding='utf-8') as file:
+    with (Path(logger.experiment.log_dir) / 'test_res.json').open('w', encoding='utf-8') as file:
         json.dump(test_results, file)
