@@ -80,8 +80,8 @@ if __name__ == '__main__':
         dirpath=str(checkpoint_dir), 
         save_top_k=trainer_settings['save_top_k'],
         monitor='val_loss',
-        filename='{epoch}-{val_loss:.4f}',
-        save_last=True
+        filename='{epoch}-{step}-{val_loss:.4f}',
+        save_last=False
     )
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
     lr_callback = LearningRateMonitor('step')
@@ -104,5 +104,5 @@ if __name__ == '__main__':
         model, datamodule=data_module
     )
     test_results = trainer.test(ckpt_path='best', datamodule=data_module)
-    with Path(logger.experiment.log_dir).open('w', encoding='utf-8') as file:
+    with Path(logger.experiment.log_dir / 'test_res.json').open('w', encoding='utf-8') as file:
         json.dump(test_results, file)
