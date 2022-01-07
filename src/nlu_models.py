@@ -263,7 +263,7 @@ class NLUModel(pl.LightningModule):
         loss_dict = self.forward_all(batch, prefix='test_')
         return loss_dict
 
-    def validation_epoch_end(self, step_outputs):
+    def test_epoch_end(self, step_outputs):
         preds, targets = self._preprocess_for_metrics(step_outputs)
         self.cal_metrics(preds, targets, prefix='test_')
         self.reset_metrics(prefix='test_')
