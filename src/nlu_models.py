@@ -8,7 +8,7 @@ from transformers import BertConfig, BertModel
 import math
 from torch.nn.modules.loss import _WeightedLoss
 from torch.optim.lr_scheduler import _LRScheduler
-from torchcrf import CRF
+from module_crf import CRF
 
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
     def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
