@@ -4,7 +4,7 @@ import torchmetrics
 import pytorch_lightning as pl
 from collections import defaultdict
 from transformers import BertConfig, BertModel, AdamW
-from transformers import get_cosine_schedule_with_warmup, get_cosine_with_hard_restarts_schedule_with_warmup
+# from transformers import get_cosine_schedule_with_warmup, get_cosine_with_hard_restarts_schedule_with_warmup
 from pytorch_lightning.utilities import rank_zero_warn
 
 import math
@@ -302,28 +302,13 @@ class NLUModel(pl.LightningModule):
             raise NotImplementedError('No Optimizer')
         
         if self.hparams.schedular_type == 'cosine':
-            lr_schedulers = get_cosine_schedule_with_warmup(
-                optimizer=optimizer,
-                num_warmup_steps=self.hparams.schedular_warmup_steps,
-                num_training_steps=self.num_training_steps
-            )
+            lr_schedulers = torch.optim.lr_scheduler.LambdaLR(optimizer, self.cosine_with_restarts_lr_lambda, -1)
         elif self.hparams.schedular_type == 'cosine_with_restarts':
-            lr_schedulers = get_cosine_with_hard_restarts_schedule_with_warmup(
-                optimizer=optimizer,
-                num_warmup_steps=self.hparams.schedular_warmup_steps,
-                num_training_steps=self.num_training_steps,
-                num_cycles=self.hparams.schedular_num_cycles
-            )
+            lr_schedulers = torch.optim.lr_scheduler.LambdaLR(optimizer, self.cosine_lr_lambda, -1)
         else:
             raise NotImplementedError('No schedular')
-        scheduler = {
-            'scheduler': lr_schedulers,
-            'interval': 'step',
-            'frequency': 1
-        }
 
-
-        return {'optimizer': optimizer, 'lr_scheduler': scheduler}
+        return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
 
     def predict(self, input_ids, token_type_ids, attention_mask):
         outputs = self.forward(input_ids, token_type_ids, attention_mask)
@@ -362,3 +347,17 @@ class NLUModel(pl.LightningModule):
 
         max_estimated_steps = min(max_estimated_steps, self.trainer.max_steps) if self.trainer.max_steps != -1 else max_estimated_steps
         return max_estimated_steps
+
+    def cosine_with_restarts_lr_lambda(self, current_step):
+        if current_step < self.hparams.schedular_warmup_steps:
+            return float(current_step) / float(max(1, self.hparams.schedular_warmup_steps))
+        progress = float(current_step - self.hparams.schedular_warmup_steps) / float(max(1, self.num_training_steps - self.hparams.schedular_warmup_steps))
+        if progress >= 1.0:
+            return 0.0
+        return max(0.0, 0.5 * (1.0 + math.cos(math.pi * ((float(self.hparams.schedular_num_cycles) * progress) % 1.0))))
+
+    def cosine_lr_lambda(self, current_step):
+        if current_step < self.hparams.schedular_warmup_steps:
+            return float(current_step) / float(max(1, self.hparams.schedular_warmup_steps))
+        progress = float(current_step - self.hparams.schedular_warmup_steps) / float(max(1, self.num_training_steps - self.hparams.schedular_warmup_steps))
+        return max(0.0, 0.5 * (1.0 + math.cos(math.pi * float(self.hparams.schedular_num_cycles) * 2.0 * progress)))
