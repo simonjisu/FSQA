@@ -129,7 +129,7 @@ class DataCreator:
     e_ENT = '[/E]'
     # f_ENT = lambda x: f'[E]{x}[/E]'
 
-    def __init__(self, data_path, template_token_lengths=10, top_k=5, model_idx=3, simple_knowledge_tag=True):
+    def __init__(self, data_path, template_token_lengths=10, top_k=5, model_idx=3, simple_knowledge_tag=True, no_aug=False):
         self.data_path = data_path
         self.exceptions = ['BalanceSheet', 'IncomeStatement', 'Ratios', 'CalendarOneYear']
         self.times = ['year', 'quarter']
@@ -137,6 +137,7 @@ class DataCreator:
         self.top_k = top_k
         self.model_idx = model_idx
         self.simple_knowledge_tag = simple_knowledge_tag
+        self.no_aug = no_aug
         self.set_sparql()
         self.set_words_dict()
         self.set_format_dict()
@@ -144,6 +145,7 @@ class DataCreator:
         self.f_ENT = lambda x: f'{self.s_ENT}{x}{self.e_ENT}'
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.progress_bar = tqdm()
+        
 
     def set_sparql(self):
         self.sparql = SparqlHandler(self.data_path / 'AccountRDF.xml')
@@ -556,7 +558,10 @@ class DataCreator:
                 all_data[k]['entities'][i] = (new_s, new_e, ent)
 
     def create_data(self):
-        data0 = self.scenario_0()
+        if self.no_aug:
+            data0 = []
+        else:
+            data0 = self.scenario_0()
         data1 = self.scenario_1()
         data2 = self.scenario_2()
         data3 = self.scenario_3()
@@ -656,7 +661,6 @@ if __name__ == '__main__':
     main_path = Path('.').absolute().parent
     data_path = main_path / 'data'
     settings_path = main_path / 'setting_files'
-
     
     parser = argparse.ArgumentParser(description='settings data creation')
     parser.add_argument('-l', '--template_token_lengths', type=int, default=5,
@@ -669,6 +673,8 @@ if __name__ == '__main__':
                         help='complex_knowledge_tag')
     parser.add_argument('-a', '--add_conll', action='store_true',
                         help='add_conll')
+    parser.add_argument('-na', '--no_aug', action='store_true',
+                        help='no_aug')
     args = parser.parse_args()
     
     template_token_lengths=args.template_token_lengths
@@ -676,6 +682,7 @@ if __name__ == '__main__':
     model_idx=args.model_idx
     complex_knowledge_tag=args.complex_knowledge_tag
     add_conll = args.add_conll
+    no_aug = args.no_aug
     
     ver = '_complex' if complex_knowledge_tag else '_simple'
     addtional = '_conll' if add_conll else ''
@@ -687,7 +694,8 @@ if __name__ == '__main__':
         template_token_lengths=template_token_lengths, 
         top_k=top_k, 
         model_idx=model_idx, 
-        simple_knowledge_tag=not complex_knowledge_tag
+        simple_knowledge_tag=not complex_knowledge_tag,
+        no_aug=no_aug
     )
     creator.create_data()
     train_data, valid_data, test_data = process_all_data(nlu_tokenizer)    
