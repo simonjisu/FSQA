@@ -80,7 +80,8 @@ if __name__ == '__main__':
         dirpath=str(checkpoint_dir), 
         save_top_k=trainer_settings['save_top_k'],
         monitor='val_loss',
-        filename='{epoch}-{step}-{val_loss:.2f}'
+        filename='{epoch}-{val_loss:.4f}',
+        save_last=True
     )
     progress_callback = TQDMProgressBar(refresh_rate=trainer_settings['refresh_rate'])
     lr_callback = LearningRateMonitor('step')
