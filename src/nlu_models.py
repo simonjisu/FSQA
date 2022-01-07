@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from collections import defaultdict
 from transformers import BertConfig, BertModel, AdamW
 from transformers import get_cosine_schedule_with_warmup, get_cosine_with_hard_restarts_schedule_with_warmup
+from pytorch_lightning.utilities import rank_zero_warn
 
 import math
 from torch.nn.modules.loss import _WeightedLoss
@@ -138,7 +139,7 @@ class NLUModel(pl.LightningModule):
     #         return self.hparams.weight_dict[name].get(str(x))
     #     else:
     #         return 0
-            
+
     def contiguous(self, x):
         return x.squeeze(-1).contiguous().type_as(x)
 
@@ -304,13 +305,13 @@ class NLUModel(pl.LightningModule):
             lr_schedulers = get_cosine_schedule_with_warmup(
                 optimizer=optimizer,
                 num_warmup_steps=self.hparams.schedular_warmup_steps,
-                num_training_steps=self.num_training_steps()
+                num_training_steps=self.num_training_steps
             )
         elif self.hparams.schedular_type == 'cosine_with_restarts':
             lr_schedulers = get_cosine_with_hard_restarts_schedule_with_warmup(
                 optimizer=optimizer,
                 num_warmup_steps=self.hparams.schedular_warmup_steps,
-                num_training_steps=self.num_training_steps(),
+                num_training_steps=self.num_training_steps,
                 num_cycles=self.hparams.schedular_num_cycles
             )
         else:
@@ -330,19 +331,26 @@ class NLUModel(pl.LightningModule):
     @property
     def num_training_steps(self) -> int:
         """Total training steps inferred from datamodule and devices."""
-        dataset = self.train_dataloader()
-        if self.trainer.max_steps:
-            return self.trainer.max_steps
+        if self.trainer.num_training_batches != float('inf'):
+            dataset_size = self.trainer.num_training_batches
+        else:
+            rank_zero_warn('Requesting dataloader...')
+            dataset_size = len(self.trainer._data_connector._train_dataloader_source.dataloader())
 
-        dataset_size = (
-            self.trainer.limit_train_batches
-            if self.trainer.limit_train_batches != 0
-            else len(dataset)
-        )
+        if isinstance(self.trainer.limit_train_batches, int):
+            dataset_size = min(dataset_size, self.trainer.limit_train_batches)
+        else:
+            dataset_size = int(dataset_size * self.trainer.limit_train_batches)
 
-        num_devices = max(1, self.trainer.num_gpus, self.trainer.num_processes)
-        if self.trainer.tpu_cores:
-            num_devices = max(num_devices, self.trainer.tpu_cores)
+        accelerator_connector = self.trainer._accelerator_connector
+        if accelerator_connector.use_ddp2 or accelerator_connector.use_dp:
+            effective_devices = 1
+        else:
+            effective_devices = self.trainer.devices
 
-        effective_batch_size = dataset.batch_size * self.trainer.accumulate_grad_batches * num_devices
-        return (dataset_size // effective_batch_size) * self.trainer.max_epochs
+        effective_devices = effective_devices * self.trainer.num_nodes
+        effective_batch_size = self.trainer.accumulate_grad_batches * effective_devices
+        max_estimated_steps = math.ceil(dataset_size // effective_batch_size) * self.trainer.max_epochs
+
+        max_estimated_steps = min(max_estimated_steps, self.trainer.max_steps) if self.trainer.max_steps != -1 else max_estimated_steps
+        return max_estimated_steps
