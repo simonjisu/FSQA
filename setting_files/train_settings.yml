@@ -16,16 +16,20 @@ model:
   lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.00001
   loss_type: 'focal' # focal / ce
+  optim: 
+    type: 'AdamW'  # Adam / AdamW
+    eps: 0.8
   focal:
     alpha: 0.95
     gamma: 3
   schedular:
-    type: 'CosineAnnealingWarmUpRestarts' # ExponentialLR / CosineAnnealingWarmUpRestarts
+    type: 'WarmupLinearSchedule' # ExponentialLR / CosineAnnealingWarmUpRestarts / WarmupLinearSchedule
     T_0: 10
     T_up: 1
     T_mult: 1
     eta_max: 0.0001
     gamma: 0.95
+    warmup_steps: 0  # Option for WarmupLinearSchedule
 
 trainer:
   save_top_k: 2

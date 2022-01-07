@@ -9,6 +9,7 @@ import math
 from torch.nn.modules.loss import _WeightedLoss
 from torch.optim.lr_scheduler import _LRScheduler
 from module_crf import CRF
+from pytorch_transformers import WarmupLinearSchedule, AdamW
 
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
     def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
@@ -268,14 +269,38 @@ class NLUModel(pl.LightningModule):
         self.cal_metrics(preds, targets, prefix='test_')
         self.reset_metrics(prefix='test_')
 
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
-            self.parameters(), 
-            lr=self.hparams.lr, 
-            weight_decay=self.hparams.weight_decay_rate
-        )
+    def configure_optimizers(self):      
+        params = list(self.bert.named_parameters()) + \
+            list(self.linear_crf.named_parameters()) + \
+            list(self.crf.named_parameters()) + \
+            list(self.intent_network.named_parameters())
+        no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+        optimizer_grouped_parameters = [
+            {
+                'params': [p for n, p in params if not any(nd in n for nd in no_decay)], 
+                'weight_decay': self.hparams.weight_decay_rate
+            },
+            {
+                'params': [p for n, p in params if any(nd in n for nd in no_decay)], 
+                'weight_decay': 0.0
+            }
+        ]
+        if self.hparams.optim_type == 'Adam':
+            optimizer = torch.optim.Adam(
+                optimizer_grouped_parameters, 
+                lr=self.hparams.lr, 
+                eps=self.hparams.optim_eps
+            )
+        elif self.hparams.optim_type == 'AdamW':
+            optimizer = AdamW(
+                optimizer_grouped_parameters, 
+                lr=self.hparams.lr, 
+                eps=self.hparams.optim_eps
+            )
+        else:
+            raise NotImplementedError('No Optimizer')
+        
         if self.hparams.schedular_type == 'CosineAnnealingWarmUpRestarts':
-        # lr_schedulers = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0.001)
             lr_schedulers = CosineAnnealingWarmUpRestarts(
                 optimizer, 
                 T_0=self.hparams.schedular_T_0, 
@@ -288,6 +313,8 @@ class NLUModel(pl.LightningModule):
             lr_schedulers = torch.optim.lr_scheduler.ExponentialLR(
                 optimizer, gamma=self.hparams.schedular_gamma
             )
+        elif self.hparams.schedular_type == 'ExponentialLR':
+            lr_schedulers = WarmupLinearSchedule(optimizer, self.hparams.schedular_warmup_steps, -1)
         else:
             raise NotImplementedError('No schedular')
 

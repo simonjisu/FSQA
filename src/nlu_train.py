@@ -57,6 +57,8 @@ if __name__ == '__main__':
         'multigpu': True if trainer_settings['n_gpus'] > 1 else False,
         # 'weight_dict': weight_dict
     }
+    for k, v in model_settings['optim'].items():
+        hparams[f'optim_{k}'] = v
     for k, v in model_settings['schedular'].items():
         hparams[f'schedular_{k}'] = v
     if model_settings['loss_type'] == 'focal':
