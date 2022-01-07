@@ -13,8 +13,8 @@ model:
   stage: 'train'
   model_path: 'bert-base-uncased'
   weight_file: 'all_data_count_l7_tk3_0.json'
-  lr: 0  # set to 0 if use CosineAnnealingWarmUpRestarts
-  weight_decay_rate: 0.00001
+  lr: 0.0  # set to 0 if use CosineAnnealingWarmUpRestarts
+  weight_decay_rate: 0.01
   loss_type: 'focal' # focal / ce
   optim: 
     type: 'AdamW'  # Adam / AdamW
@@ -23,18 +23,14 @@ model:
     alpha: 0.95
     gamma: 3
   schedular:
-    type: 'WarmupLinearSchedule' # ExponentialLR / CosineAnnealingWarmUpRestarts / WarmupLinearSchedule
-    T_0: 10
-    T_up: 1
-    T_mult: 1
-    eta_max: 0.0001
-    gamma: 0.95
-    warmup_steps: 0  # Option for WarmupLinearSchedule
+    type: 'cosine_with_restarts' # 'cosine', 'cosine_with_restarts' / # 'linear', 'polynomial', 'constant', 'constant_with_warmup'
+    num_cycles : 3
+    warmup_steps: 250
 
 trainer:
   save_top_k: 2
   refresh_rate: 1
-  n_epochs: 10
+  n_epochs: 12
   n_gpus: 1
   num_sanity_val_steps: 0
   strategy: 'ddp_spawn'  #  dp | ddp | ddp2 | ddp_spawn

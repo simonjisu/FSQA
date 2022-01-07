@@ -3,13 +3,13 @@ import torch.nn as nn
 import torchmetrics
 import pytorch_lightning as pl
 from collections import defaultdict
-from transformers import BertConfig, BertModel
+from transformers import BertConfig, BertModel, AdamW
+from transformers import get_cosine_schedule_with_warmup, get_cosine_with_hard_restarts_schedule_with_warmup
 
 import math
 from torch.nn.modules.loss import _WeightedLoss
 from torch.optim.lr_scheduler import _LRScheduler
 from module_crf import CRF
-from pytorch_transformers import WarmupLinearSchedule, AdamW
 
 class CosineAnnealingWarmUpRestarts(_LRScheduler):
     def __init__(self, optimizer, T_0, T_mult=1, eta_max=0.1, T_up=0, gamma=1., last_epoch=-1):
@@ -300,21 +300,19 @@ class NLUModel(pl.LightningModule):
         else:
             raise NotImplementedError('No Optimizer')
         
-        if self.hparams.schedular_type == 'CosineAnnealingWarmUpRestarts':
-            lr_schedulers = CosineAnnealingWarmUpRestarts(
-                optimizer, 
-                T_0=self.hparams.schedular_T_0, 
-                T_mult=self.hparams.schedular_T_mult, 
-                eta_max=self.hparams.schedular_eta_max, 
-                T_up=self.hparams.schedular_T_up, 
-                gamma=self.hparams.schedular_gamma
+        if self.hparams.schedular_type == 'cosine':
+            lr_schedulers = get_cosine_schedule_with_warmup(
+                optimizer=optimizer,
+                num_warmup_steps=self.hparams.schedular_warmup_steps,
+                num_training_steps=self.num_training_steps()
             )
-        elif self.hparams.schedular_type == 'ExponentialLR':
-            lr_schedulers = torch.optim.lr_scheduler.ExponentialLR(
-                optimizer, gamma=self.hparams.schedular_gamma
+        elif self.hparams.schedular_type == 'cosine_with_restarts':
+            lr_schedulers = get_cosine_with_hard_restarts_schedule_with_warmup(
+                optimizer=optimizer,
+                num_warmup_steps=self.hparams.schedular_warmup_steps,
+                num_training_steps=self.num_training_steps(),
+                num_cycles=self.hparams.schedular_num_cycles
             )
-        elif self.hparams.schedular_type == 'WarmupLinearSchedule':
-            lr_schedulers = WarmupLinearSchedule(optimizer, self.hparams.schedular_warmup_steps, -1)
         else:
             raise NotImplementedError('No schedular')
 
@@ -328,3 +326,23 @@ class NLUModel(pl.LightningModule):
     def _predict_from_outputs(self, outputs):
         predicts = {k: outputs[k].argmax(-1) for k in ['tags', 'intent']} 
         return predicts
+
+    @property
+    def num_training_steps(self) -> int:
+        """Total training steps inferred from datamodule and devices."""
+        dataset = self.train_dataloader()
+        if self.trainer.max_steps:
+            return self.trainer.max_steps
+
+        dataset_size = (
+            self.trainer.limit_train_batches
+            if self.trainer.limit_train_batches != 0
+            else len(dataset)
+        )
+
+        num_devices = max(1, self.trainer.num_gpus, self.trainer.num_processes)
+        if self.trainer.tpu_cores:
+            num_devices = max(num_devices, self.trainer.tpu_cores)
+
+        effective_batch_size = dataset.batch_size * self.trainer.accumulate_grad_batches * num_devices
+        return (dataset_size // effective_batch_size) * self.trainer.max_epochs
