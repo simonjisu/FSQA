@@ -6,7 +6,7 @@ from multiprocessing import freeze_support
 from tqdm import tqdm
 from pathlib import Path
 from nlu_utils import NLUDataModule
-from collections import Counter
+from collections import Counter, defaultdict
 
 def count(data_module, tags_counter, intent_counter, prefix='train'):
         
@@ -20,9 +20,6 @@ def count(data_module, tags_counter, intent_counter, prefix='train'):
             x = dataset[i]
             intent_counter.update([x['intent']])
             tags_counter.update(x['tags'])
-        
-        
-        return tags_counter, intent_counter
 
 
 if __name__ == '__main__':
@@ -56,16 +53,14 @@ if __name__ == '__main__':
         seed=settings['seed']
     )
     data_module.prepare_data()
-    intent_counter = Counter()
-    tags_counter = Counter()
-    tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='train')
-    tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='valid')
-    # tags_counter, intent_counter = count(data_module, tags_counter, intent_counter, prefix='test')
-    print(intent_counter)
-    print(tags_counter)
+
+    all_counters = defaultdict(dict)
+    for prefix in ['train', 'valid', 'test']:
+        all_counters[prefix]['tags'] = Counter()
+        all_counters[prefix]['intent'] = Counter()
+
+        count(data_module, all_counters[prefix]['tags'], all_counters[prefix]['intent'], prefix=prefix)
+    print(all_counters)
     name = data_module_settings['train_file'].rstrip('.jsonl').split('_')
     with (data_path / f'all_data_count_{name[4]}_{name[5]}_{name[6]}.json').open('w', encoding='utf-8') as file:
-        json.dump({
-            'tags': {int(k): v for k, v in tags_counter.items()},
-            'intent': {int(k): v for k, v in intent_counter.items()}
-        }, file)
+        json.dump(all_counters, file)
