@@ -10,7 +10,7 @@ from nlu_utils import NLUDataModule
 from collections import Counter, defaultdict
 from nlu_utils import NLUTokenizer
 
-def count(data_module, accounts, all_counters, prefix='train'):
+def count(data_module, all_counters, prefix='train'):
         if prefix == 'train':
             dataset = data_module.create_dataset(data_module.train_data)
         elif prefix == 'valid':
@@ -19,9 +19,10 @@ def count(data_module, accounts, all_counters, prefix='train'):
             dataset = data_module.create_dataset(data_module.test_data)
         for i in tqdm(range(len(dataset)), total=len(dataset), desc=f'Counting {prefix}'):
             x = dataset[i]
-            for acc in accounts:
-                if acc in dataset.data[i]['text']:
-                    all_counters[prefix]['account'].update([acc])
+            ents = list(filter(lambda x: x[2] in ['IS', 'BS'], dataset.data[i]['entities']))
+            for si, ei, _ in ents:
+                acc = dataset.data[i]['text'][si:ei]
+                all_counters[prefix]['account'].update([acc])
             all_counters[prefix]['intent'].update([x['intent']])
             all_counters[prefix]['tags'].update(x['tags'])
 
@@ -36,11 +37,6 @@ if __name__ == '__main__':
     freeze_support()
     main_path = Path().absolute().parent
     data_path = main_path / 'data'
-    df_account = pd.read_csv(data_path / 'AccountName.csv', encoding='utf-8')
-    accounts = []
-    for _, row in df_account.iterrows():
-        accounts.append(row['acc_name_eng'].lower())
-
     setting_path = main_path / 'setting_files'
 
     with (setting_path / args.file).open('r') as file:
