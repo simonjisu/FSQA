@@ -10,7 +10,29 @@ def write(data_path, modules):
     # Form
     with st.form(key='Form'):
         st.write('**Select a scenario**')
-        st.write('This is a demonstration only to show how does the framework works, so natural languages understanding part is treated as given.')
+        st.write('Thers are three reference key scenarios by following table, you can copy and phased it or modify a little bit from them')
+        st.write("""
+        ### What-is?
+
+        In 'What-is' questions, users might want to ask past information based on the fact and knowledge 
+        on financial statements. Some ratios which can be calculate from the statements are also important to analyze company's current 
+        status.
+
+        - For example, "What was the cost of sales ratio in the last year?" 
+
+        ### What-if:based on fact
+        In 'What-if:based on fact' questions, users might want to ask the effect to a certain account 
+        by changing another account value. 
+        
+        - For example, "What happens to the operating income when the cost of sales increases by 10% this year?"
+
+        ### What-if:forecasting
+
+        In 'What-if:forecasting' questions, users might want to know future values of a account.
+
+        - For example, "What will be our revenue in 4th quarter?".
+
+        """)
         scenario_objects = {
             'none': 0, 
             'Asking information based on fact and knowledge': 1, 
@@ -23,17 +45,18 @@ def write(data_path, modules):
             2: 'What happens to the Operating Income when the Cost of Sales increases by 10% this year?',
             3: 'What will be our revenue in the 4th quarter?'
         }
-        scenario_option = st.selectbox(label='Select scenario', options=scenario_objects)
-        scenario_id = scenario_objects[scenario_option]
-        sentence = scenario_questions.get(scenario_id)
+        sentence = st.text_input('Insert a questions')
+        # scenario_option = st.selectbox(label='Select scenario', options=scenario_objects)
+        # scenario_id = scenario_objects[scenario_option]
+        # sentence = scenario_questions.get(scenario_id)
 
         submit_button = st.form_submit_button(label='Submit')
 
-    if submit_button and (scenario_option != 'none'):
+    if submit_button:
         st.write('### Scenario Question')
         st.write(f'**{sentence}**')
-
         nlu_results = nlu_module(sentence=sentence, scenario=scenario_id)
+        
         key_information = dialog_manager.post_process(nlu_results)
         
         context = key_information['context']

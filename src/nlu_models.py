@@ -304,7 +304,14 @@ class NLUModel(pl.LightningModule):
         if self.hparams.schedular_type == 'cosine':
             lr_schedulers = torch.optim.lr_scheduler.LambdaLR(optimizer, self.cosine_with_restarts_lr_lambda, -1)
         elif self.hparams.schedular_type == 'cosine_with_restarts':
-            lr_schedulers = torch.optim.lr_scheduler.LambdaLR(optimizer, self.cosine_lr_lambda, -1)
+            lr_schedulers = CosineAnnealingWarmUpRestarts(
+                optimizer, 
+                T_0=self.hparams.schedular_T_0, 
+                T_mult=1, 
+                eta_max=self.hparams.schedular_eta_max, 
+                T_up=0, 
+                gamma=self.hparams.schedular_gamma, 
+                last_epoch=-1)
         else:
             raise NotImplementedError('No schedular')
 
@@ -351,8 +358,7 @@ class NLUModel(pl.LightningModule):
             max_estimated_steps = min(max_estimated_steps, self.trainer.max_steps) if self.trainer.max_steps != -1 else max_estimated_steps
             return max_estimated_steps
 
-    def cosine_with_restarts_lr_lambda(self, current_step):
-        
+    def cosine_with_restarts_lr_lambda(self, current_step):    
         if current_step < self.hparams.schedular_warmup_steps:
             return float(current_step) / float(max(1, self.hparams.schedular_warmup_steps))
         progress = float(current_step - self.hparams.schedular_warmup_steps) / float(max(1, self.num_training_steps - self.hparams.schedular_warmup_steps))

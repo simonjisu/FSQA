@@ -17,3 +17,7 @@ ontology:
     label_name: 'eng_name'
   model:
     model_name: 'linear_model.pickle'
+
+nlu:
+  checkpoint_file: 'best_model.ckpt'
+  labels_file: 'labels_simple.json'

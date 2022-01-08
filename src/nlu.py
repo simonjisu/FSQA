@@ -1,14 +1,22 @@
 from collections import defaultdict
+from nlu_models import NLUModel
+from nlu_utils import NLUTokenizer
 import spacy
+import json
 
 class NLU(object):
-    def __init__(self, model_name='en_core_web_trf'):
-        self.model_name = model_name
-        self.sp_trf = spacy.load(model_name)
+    def __init__(self, checkpoint_path, labels_path):
+        self.model = NLUModel.load_from_checkpoint(checkpoint_path)
+        self.tokenizer = NLUTokenizer()
+        with labels_path.open('r', encoding='utf-8') as file:
+            ls = json.load(file)
+        self.tags2id = ls['tags']
+        self.intent2id = ls['intent']
 
-    def __call__(self, sentence:str, scenario:int):
+    def __call__(self, text:str):
         nlu_results = defaultdict()
-        doc = self.sp_trf(sentence)
+        text = text.lower()
+        doc = self.sp_trf(text)
         tag = None
         words = None
         tags = set()
