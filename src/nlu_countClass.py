@@ -63,7 +63,7 @@ if __name__ == '__main__':
         all_counters[prefix]['tags'] = Counter()
         all_counters[prefix]['intent'] = Counter()
         all_counters[prefix]['account'] = Counter()
-        count(data_module, accounts, all_counters, prefix=prefix)
+        count(data_module, all_counters, prefix=prefix)
     print(all_counters)
     name = args.file.rstrip('.yml').split('_', 1)[1]
     with (data_path / f'all_data_count_{name}.json').open('w', encoding='utf-8') as file:
