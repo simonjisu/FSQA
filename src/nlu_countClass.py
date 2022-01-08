@@ -61,6 +61,6 @@ if __name__ == '__main__':
 
         count(data_module, all_counters[prefix]['tags'], all_counters[prefix]['intent'], prefix=prefix)
     print(all_counters)
-    name = data_module_settings['train_file'].rstrip('.jsonl').split('_')
-    with (data_path / f'all_data_count_{name[4]}_{name[5]}_{name[6]}.json').open('w', encoding='utf-8') as file:
+    name = args.file.name.rstrip('.yml').split('_', 1)
+    with (data_path / f'all_data_count_{name}.json').open('w', encoding='utf-8') as file:
         json.dump(all_counters, file)
