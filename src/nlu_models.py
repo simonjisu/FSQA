@@ -105,24 +105,6 @@ class NLUModel(pl.LightningModule):
         self.crf = CRF(num_tags=self.hparams.tags_size, batch_first=True)
         self.intent_network = nn.Linear(cfg.hidden_size, self.hparams.intent_size)
 
-        # if self.hparams.weight_dict is not None:
-        #     tags_weight = [self.get_fn(i, 'tags') for i in range(self.hparams.tags_size)]
-        #     tags_weight = torch.FloatTensor([1 - (c/sum(tags_weight)) for c in tags_weight])
-
-        #     intent_weight = [self.get_fn(i, 'intent') for i in range(self.hparams.intent_size)]
-        #     intent_weight = torch.FloatTensor([1 - (c/sum(intent_weight)) for c in intent_weight])
-        # else:
-        #     tags_weight = None
-        #     intent_weight = None
-        # # losses
-        # if self.hparams.loss_type == 'ce':
-        #     self.intent_loss = nn.CrossEntropyLoss(weight=intent_weight)
-        #     self.tags_loss = nn.CrossEntropyLoss(weight=tags_weight)
-        # elif self.hparams.loss_type == 'focal':
-        #     self.intent_loss = FocalLoss(weight=intent_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
-        #     self.tags_loss = FocalLoss(weight=tags_weight, alpha=self.hparams.focal_alpha, gamma=self.hparams.focal_gamma)
-        # else:
-        #     raise NotImplementedError('Loss is not implemented')
         if self.hparams.loss_type == 'ce': 
             self.intent_loss_function = nn.CrossEntropyLoss()
         else:
@@ -134,12 +116,6 @@ class NLUModel(pl.LightningModule):
             'test_': self.create_metrics(prefix='test_')
         })
 
-    # def get_fn(self, x, name):
-    #     if self.hparams.weight_dict[name].get(str(x)):
-    #         return self.hparams.weight_dict[name].get(str(x))
-    #     else:
-    #         return 0
-
     def contiguous(self, x):
         return x.squeeze(-1).contiguous().type_as(x)
 
@@ -150,11 +126,12 @@ class NLUModel(pl.LightningModule):
             m[k] = metrics.clone(prefix+k+'_')
         return m
 
-    def _forward_bert(self, input_ids, token_type_ids, attention_mask):
+    def _forward_bert(self, input_ids, token_type_ids, attention_mask, output_attentions=False):
         outputs = self.bert(
             input_ids=input_ids,
             token_type_ids=token_type_ids,
             attention_mask=attention_mask,
+            output_attentions=output_attentions
         )
         return outputs
 
@@ -178,9 +155,9 @@ class NLUModel(pl.LightningModule):
             intent_prediction = intent_logits.argmax(-1)
         return intent_loss, intent_prediction
 
-    def forward(self, input_ids, token_type_ids, attention_mask, tags=None, intent=None):
+    def forward(self, input_ids, token_type_ids, attention_mask, tags=None, intent=None, output_attentions=False):
         # bert
-        outputs = self._forward_bert(input_ids, token_type_ids, attention_mask)
+        outputs = self._forward_bert(input_ids, token_type_ids, attention_mask, output_attentions=output_attentions)
         # tags
         tags_loss, tags_prediction = self._forward_tags(
             last_hidden_state=outputs.last_hidden_state, 
@@ -192,13 +169,19 @@ class NLUModel(pl.LightningModule):
             pooled_outputs=outputs.pooler_output,
             intent=intent
         )
-
-        return {
-            'tags_loss': tags_loss,       # (B,)
-            'intent_loss': intent_loss,      # (B,)
-            'tags_pred': tags_prediction.view(-1),  # (B*T,)
-            'intent_pred': intent_prediction,      # (B,)
-        }
+        if output_attentions:
+            return {
+                'attn': outputs[-1],
+                'tags_pred': tags_prediction.view(-1),  # (B*T,)
+                'intent_pred': intent_prediction,      # (B,)
+            }
+        else:
+            return {
+                'tags_loss': tags_loss,       # (B,)
+                'intent_loss': intent_loss,      # (B,)
+                'tags_pred': tags_prediction.view(-1),  # (B*T,)
+                'intent_pred': intent_prediction,      # (B,)
+            }
 
     def forward_all(self, batch, prefix='train_'):
         outputs = self(**batch)
@@ -317,15 +300,14 @@ class NLUModel(pl.LightningModule):
 
         return {'optimizer': optimizer, 'lr_scheduler': lr_schedulers}
 
-    def predict(self, input_ids, token_type_ids, attention_mask):
-        outputs = self.forward(input_ids, token_type_ids, attention_mask)
-        predicts = self._predict_from_outputs(outputs)
-        return predicts
+    def predict(self, input_ids, token_type_ids, attention_mask, output_attentions=False):
+        outputs = self(input_ids, token_type_ids, attention_mask, output_attentions=output_attentions)
 
-    def _predict_from_outputs(self, outputs):
-        predicts = {k: outputs[k].argmax(-1) for k in ['tags', 'intent']} 
-        return predicts
-
+        return {
+            'attn': outputs['attn'] if output_attentions else None,
+            'tags': outputs['tags_pred'].detach().tolist(),
+            'intent': outputs['intent_pred'].detach().tolist()
+        }
     @property
     def num_training_steps(self) -> int:
         """Total training steps inferred from datamodule and devices.

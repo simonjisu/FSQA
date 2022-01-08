@@ -6,17 +6,24 @@ db:
   port: 5432
 
 ontology:
+  acc_name_file: 'AccountName.csv'
+  rdf_file: 'AccountRDF.xml'
   graph_drawer:
-    height: '600px' 
+    height: '700px' 
     width: '100%' 
     directed: true 
     font_color: 'black' 
     heading: '' 
     notebook: true
-    show_file_name: 'nx.html'
+    show_file_name: './data/nx.html'
     label_name: 'eng_name'
   model:
     model_name: 'linear_model.pickle'
+
+dialog:
+  words_file: 'AccountWords.csv'
+  acc_name_file: 'AccountName.csv'
+  rdf_file: 'AccountRDF.xml'
 
 nlu:
   checkpoint_file: 'best_model.ckpt'

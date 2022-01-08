@@ -12,7 +12,7 @@ data_module:
 model:
   stage: 'train'
   model_path: 'bert-base-uncased'
-  weight_file: 'all_data_count_l7_tk3_0.json'
+  output_attentions: false
   lr: 0.0  # set to 0 if use CosineAnnealingWarmUpRestarts
   weight_decay_rate: 0.01
   loss_type: 'focal' # focal / ce
@@ -20,12 +20,16 @@ model:
     type: 'AdamW'  # Adam / AdamW
     eps: 0.8
   focal:
-    alpha: 0.95
+    alpha: 0.75
     gamma: 3
   schedular:
     type: 'cosine_with_restarts' # 'cosine', 'cosine_with_restarts' / # 'linear', 'polynomial', 'constant', 'constant_with_warmup'
-    num_cycles : 3
-    warmup_steps: 250
+    T_0: 12
+    eta_max: 0.01
+    gamma: 0.75
+    num_cycles : 1
+    warmup_steps: 0
+    training_steps: 1000
 
 trainer:
   save_top_k: 2

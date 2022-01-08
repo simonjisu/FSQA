@@ -7,6 +7,7 @@ import numpy as np
 from pyvis.network import Network
 from collections import defaultdict
 from embeddedML import LinearRegression
+from utils import convert_to_string
 
 class SparqlHandler():
     def __init__(self, rdf_path):
@@ -113,6 +114,20 @@ class SparqlHandler():
         )
         return knowledge_queries[knowledge]
 
+    def get_role_dict(self, knowledge):
+        knowledge_query = self.sparql.get_predefined_knowledge(knowledge=knowledge)
+        sparql_results = self.sparql.query(knowledge_query)
+        role_dict = defaultdict(list)
+        for s, p, o in sparql_results:
+            s, p, o = map(convert_to_string, [s, p, o])
+            if s == 'CalendarOneYear' or o == 'CalendarOneYear':
+                continue
+            if s not in role_dict[o]:
+                role_dict[o].append(s)
+            
+        return role_dict
+
+    # TODO: move these to dialog manager or db handler
     def get_div_query(self, qs, acc):
         X, Y = qs
         if (X[0] == 'denominator') and (Y[0] == 'numerator'):
@@ -249,9 +264,6 @@ class OntologySystem():
             self.ACC_DICT[acc]['kor_name'] = kor
             self.ACC_DICT[acc]['eng_name'] = eng
             self.ACC_DICT[acc]['group'] = group
-        # self.ACC_DICT['CalendarOneYear']['eng_name'] = '365 days'
-        # self.ACC_DICT['CalendarOneYear']['kor_name'] = '365 일'
-        # self.ACC_DICT['CalendarOneYear']['group'] = 'TIME-Value-99'
         
         query_statement = """
         SELECT ?s ?p ?literal 
@@ -263,9 +275,9 @@ class OntologySystem():
         """
         qres = self.sparql.query(query_statement)
         for src, link, trg in qres:
-            src = self.graph_drawer.convert_to_string(src)
-            link = self.graph_drawer.convert_to_string(link)
-            trg = self.graph_drawer.convert_to_string(trg)
+            src = convert_to_string(src)
+            link = convert_to_string(link)
+            trg = convert_to_string(trg)
             self.ACC_DICT[src][link] = trg
 
     def get_graph(self, sparql_results, show=True):

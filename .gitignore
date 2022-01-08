@@ -137,4 +137,5 @@ logs/
 checkpoints/
 setting_files/x*.yml
 data/all_data*
-data/labels_*
+data/best_model.ckpt
+src/data/*

@@ -19,4 +19,4 @@ spacy-streamlit
 torchmetrics
 pytorch_lightning
 pytokenizations
-pytorch-transformers
+bertviz
