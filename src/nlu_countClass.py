@@ -61,6 +61,6 @@ if __name__ == '__main__':
 
         count(data_module, all_counters[prefix]['tags'], all_counters[prefix]['intent'], prefix=prefix)
     print(all_counters)
-    name = args.file.name.rstrip('.yml').split('_', 1)
+    name = args.file.rstrip('.yml').split('_', 1)
     with (data_path / f'all_data_count_{name}.json').open('w', encoding='utf-8') as file:
         json.dump(all_counters, file)
