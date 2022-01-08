@@ -324,31 +324,35 @@ class NLUModel(pl.LightningModule):
         """Total training steps inferred from datamodule and devices.
         https://github.com/PyTorchLightning/pytorch-lightning/issues/10760
         """
-        if self.trainer.num_training_batches != float('inf'):
-            dataset_size = self.trainer.num_training_batches
+        if self.hparams.get('schedular_training_steps'):
+            return self.hparams.schedular_training_steps
         else:
-            rank_zero_warn('Requesting dataloader...')
-            dataset_size = len(self.trainer._data_connector._train_dataloader_source.dataloader())
+            if self.trainer.num_training_batches != float('inf'):
+                dataset_size = self.trainer.num_training_batches
+            else:
+                rank_zero_warn('Requesting dataloader...')
+                dataset_size = len(self.trainer._data_connector._train_dataloader_source.dataloader())
 
-        if isinstance(self.trainer.limit_train_batches, int):
-            dataset_size = min(dataset_size, self.trainer.limit_train_batches)
-        else:
-            dataset_size = int(dataset_size * self.trainer.limit_train_batches)
+            if isinstance(self.trainer.limit_train_batches, int):
+                dataset_size = min(dataset_size, self.trainer.limit_train_batches)
+            else:
+                dataset_size = int(dataset_size * self.trainer.limit_train_batches)
 
-        accelerator_connector = self.trainer._accelerator_connector
-        if accelerator_connector.use_ddp2 or accelerator_connector.use_dp:
-            effective_devices = 1
-        else:
-            effective_devices = self.trainer.devices
+            accelerator_connector = self.trainer._accelerator_connector
+            if accelerator_connector.use_ddp2 or accelerator_connector.use_dp:
+                effective_devices = 1
+            else:
+                effective_devices = self.trainer.devices
 
-        effective_devices = effective_devices * self.trainer.num_nodes
-        effective_batch_size = self.trainer.accumulate_grad_batches * effective_devices
-        max_estimated_steps = math.ceil(dataset_size // effective_batch_size) * self.trainer.max_epochs
+            effective_devices = effective_devices * self.trainer.num_nodes
+            effective_batch_size = self.trainer.accumulate_grad_batches * effective_devices
+            max_estimated_steps = math.ceil(dataset_size // effective_batch_size) * self.trainer.max_epochs
 
-        max_estimated_steps = min(max_estimated_steps, self.trainer.max_steps) if self.trainer.max_steps != -1 else max_estimated_steps
-        return max_estimated_steps
+            max_estimated_steps = min(max_estimated_steps, self.trainer.max_steps) if self.trainer.max_steps != -1 else max_estimated_steps
+            return max_estimated_steps
 
     def cosine_with_restarts_lr_lambda(self, current_step):
+        
         if current_step < self.hparams.schedular_warmup_steps:
             return float(current_step) / float(max(1, self.hparams.schedular_warmup_steps))
         progress = float(current_step - self.hparams.schedular_warmup_steps) / float(max(1, self.num_training_steps - self.hparams.schedular_warmup_steps))

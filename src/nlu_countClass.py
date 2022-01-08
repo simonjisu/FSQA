@@ -20,7 +20,7 @@ def count(data_module, accounts, all_counters, prefix='train'):
         for i in tqdm(range(len(dataset)), total=len(dataset), desc=f'Counting {prefix}'):
             x = dataset[i]
             for acc in accounts:
-                if acc in x['text']:
+                if acc in dataset.data[i]['text']:
                     all_counters[prefix]['account'].update([acc])
             all_counters[prefix]['intent'].update([x['intent']])
             all_counters[prefix]['tags'].update(x['tags'])
