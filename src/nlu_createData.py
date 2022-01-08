@@ -705,10 +705,10 @@ if __name__ == '__main__':
     creator.create_data()
     train_data, valid_data, test_data = process_all_data(nlu_tokenizer, random=random)
     if no_aug:
-        noaug = '_noaug' if no_aug else ''
+        noaug = 'noaug' if no_aug else ''
         save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_{noaug}{addtional}.jsonl')
-        save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_{noaug}{noaug}.jsonl')
-        save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_{noaug}{noaug}.jsonl')
+        save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_{noaug}{addtional}.jsonl')
+        save_as_jsonl(test_data, path=data_path / f'all_data_test{ver}_{noaug}{addtional}.jsonl')
     else:
         save_as_jsonl(train_data, path=data_path / f'all_data_train{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
         save_as_jsonl(valid_data, path=data_path / f'all_data_valid{ver}_l{template_token_lengths}_tk{top_k}_{model_idx}{addtional}.jsonl')
