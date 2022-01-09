@@ -8,167 +8,127 @@ from pyvis.network import Network
 from collections import defaultdict
 from embeddedML import LinearRegression
 from utils import convert_to_string
+from sparql import SparqlHandler
 
-class SparqlHandler():
-    def __init__(self, rdf_path):
-        self.graph = Graph()
-        self.graph.load(rdf_path)
+# class SparqlHandler():
+#     def __init__(self, rdf_path):
+#         self.graph = Graph()
+#         self.graph.load(rdf_path)
 
-    def query(self, query_statement):
-        return self.graph.query(query_statement)
+#     def query(self, query_statement):
+#         return self.graph.query(query_statement)
 
-    def get_related_nodes_from_sub_tree(self, sub_tree):
-        nodes = set()
-        for k, v in dict(sub_tree).items():
-            for a in v:
-                nodes.add(a)
-            nodes.add(k)
-        nodes = list(map(lambda x: f'acc:{x}', nodes))
-        return nodes
+#     def get_related_nodes_from_sub_tree(self, sub_tree):
+#         nodes = set()
+#         for k, v in dict(sub_tree).items():
+#             for a in v:
+#                 nodes.add(a)
+#             nodes.add(k)
+#         nodes = list(map(lambda x: f'acc:{x}', nodes))
+#         return nodes
 
-    def get_sub_tree_relations(self, sub_tree):
-        nodes = self.get_related_nodes_from_sub_tree(sub_tree)
-        query_statement = """
-        SELECT ?s ?p ?o 
-        WHERE { 
-            ?s rdf:type acc:Account .
-            VALUES ?o { """ + f'{" ".join(nodes)}' + """ }
-            VALUES ?p { acc:partOf acc:denominator acc:numerator } 
-            ?s ?p ?o .
-        }
-        """
-        return self.query(query_statement)
+#     def get_sub_tree_relations(self, sub_tree):
+#         nodes = self.get_related_nodes_from_sub_tree(sub_tree)
+#         query_statement = """
+#         SELECT ?s ?p ?o 
+#         WHERE { 
+#             ?s rdf:type acc:Account .
+#             VALUES ?o { """ + f'{" ".join(nodes)}' + """ }
+#             VALUES ?p { acc:partOf acc:denominator acc:numerator } 
+#             ?s ?p ?o .
+#         }
+#         """
+#         return self.query(query_statement)
 
-    def get_predefined_knowledge(self, knowledge:str):
-        # BS, IS, BSR, ISR
-        # TODO: 일부 노드 없음(balance sheet 에서 ratio의 분모인 sales )
-        knowledge_queries = dict(
-            BS="""
-            SELECT ?s ?p ?o WHERE { 
-            VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
-            acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
-            acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
-            acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
-            VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
-            acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
-            acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
-            acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
-            VALUES ?p { acc:partOf acc:denominator acc:numerator } 
-            ?s ?p ?o .
-            }
-            """,
-            IS="""
-            SELECT ?s ?p ?o WHERE { 
-            VALUES ?s { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
-            acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
-            acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
-            acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
-            VALUES ?o { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
-            acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
-            acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
-            acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
-            VALUES ?p { acc:partOf acc:denominator acc:numerator } 
-            ?s ?p ?o .
-            }
-            """,
-            ISR="""
-            SELECT ?s ?p ?o WHERE { 
-            VALUES ?s { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
-            acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
-            acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
-            acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
-            VALUES ?o { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
-            acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
-            acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
-            acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
-            VALUES ?p { acc:hasPart acc:isDenominatorOf acc:isNumeratorOf } 
-            ?s ?p ?o .
-            }
-            """,
-            BSR="""
-            SELECT ?s ?p ?o WHERE { 
-            VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
-            acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
-            acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
-            acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
-            VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
-            acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
-            acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
-            acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
-            acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
-            acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
-            acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
-            VALUES ?p { acc:hasPart acc:isDenominatorOf acc:isNumeratorOf } 
-            ?s ?p ?o .
-            }
-            """
-        )
-        return knowledge_queries[knowledge]
+#     def get_predefined_knowledge(self, knowledge:str):
+#         # BS, IS, BSR, ISR
+#         # TODO: 일부 노드 없음(balance sheet 에서 ratio의 분모인 sales )
+#         knowledge_queries = dict(
+#             BS="""
+#             SELECT ?s ?p ?o WHERE { 
+#             VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
+#             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
+#             acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+#             acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
+#             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
+#             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
+#             acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
+#             VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
+#             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
+#             acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+#             acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
+#             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
+#             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
+#             acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
+#             VALUES ?p { acc:partOf acc:denominator acc:numerator } 
+#             ?s ?p ?o .
+#             }
+#             """,
+#             IS="""
+#             SELECT ?s ?p ?o WHERE { 
+#             VALUES ?s { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
+#             acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
+#             acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
+#             acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
+#             VALUES ?o { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
+#             acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
+#             acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
+#             acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
+#             VALUES ?p { acc:partOf acc:denominator acc:numerator } 
+#             ?s ?p ?o .
+#             }
+#             """,
+#             ISR="""
+#             SELECT ?s ?p ?o WHERE { 
+#             VALUES ?s { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
+#             acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
+#             acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
+#             acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
+#             VALUES ?o { acc:BalanceSheet acc:Revenue acc:CostOfSales acc:GrossProfit acc:SellingGeneralAdministrativeExpenses 
+#             acc:OperatingIncome acc:FinanceIncome acc:FinancialExpenses acc:ProfitBeforeTax acc:IncomeTaxExpense acc:Profit 
+#             acc:IncomeStatement acc:CostOfSalesRatio acc:SellingGeneralAdministrativeRatio 
+#             acc:SalesAndSellingGeneralAdministrativeRatio acc:IncomeTaxRatio acc:ProfitRatio acc:Ratios }
+#             VALUES ?p { acc:hasPart acc:isDenominatorOf acc:isNumeratorOf } 
+#             ?s ?p ?o .
+#             }
+#             """,
+#             BSR="""
+#             SELECT ?s ?p ?o WHERE { 
+#             VALUES ?s { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
+#             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
+#             acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+#             acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
+#             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
+#             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
+#             acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
+#             VALUES ?o { acc:CurrentAssets acc:CashAndCashEquivalents acc:TradeAndOtherCurrentReceivables acc:PrepaidExpenses 
+#             acc:Inventories acc:NoncurrentAssets acc:PropertyPlantAndEquipment acc:IntangibleAssets acc:AssetsAbstract 
+#             acc:CurrentLiabilities acc:TradeAndOtherCurrentPayables acc:ShortTermBorrowings acc:AdvancesCustomers 
+#             acc:NoncurrentLiabilities acc:BondsIssued acc:LongTermBorrowings acc:LiabilitiesAbstract acc:EquitiesAbstract 
+#             acc:LiabilitiesAndEquities acc:BalanceSheet acc:IncomeStatement acc:TradeReceivableTurnoverPeriod 
+#             acc:InventoriesTurnoverPeriod acc:TradePayablesTurnoverPeriod acc:AdvancesCustomersTurnoverPeriod 
+#             acc:PrepaidExpensesTurnoverPeriod acc:Ratios acc:CalendarOneYear acc:Revenue }
+#             VALUES ?p { acc:hasPart acc:isDenominatorOf acc:isNumeratorOf } 
+#             ?s ?p ?o .
+#             }
+#             """
+#         )
+#         return knowledge_queries[knowledge]
 
-    def get_role_dict(self, knowledge):
-        knowledge_query = self.sparql.get_predefined_knowledge(knowledge=knowledge)
-        sparql_results = self.sparql.query(knowledge_query)
-        role_dict = defaultdict(list)
-        for s, p, o in sparql_results:
-            s, p, o = map(convert_to_string, [s, p, o])
-            if s == 'CalendarOneYear' or o == 'CalendarOneYear':
-                continue
-            if s not in role_dict[o]:
-                role_dict[o].append(s)
+#     def get_role_dict(self, knowledge):
+#         knowledge_query = self.sparql.get_predefined_knowledge(knowledge=knowledge)
+#         sparql_results = self.sparql.query(knowledge_query)
+#         role_dict = defaultdict(list)
+#         for s, p, o in sparql_results:
+#             s, p, o = map(convert_to_string, [s, p, o])
+#             if s == 'CalendarOneYear' or o == 'CalendarOneYear':
+#                 continue
+#             if s not in role_dict[o]:
+#                 role_dict[o].append(s)
             
-        return role_dict
+#         return role_dict
 
-    # TODO: move these to dialog manager or db handler
-    def get_div_query(self, qs, acc):
-        X, Y = qs
-        if (X[0] == 'denominator') and (Y[0] == 'numerator'):
-            B = X
-            A = Y
-        elif (Y[0] == 'denominator') and (X[0] == 'numerator'):
-            B = Y
-            A = X
-        A_sign, A_node, A_q = A[1:]
-        B_sign, B_node, B_q = B[1:]
-        div_query_format = """
-        SELECT ({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
-        FROM (
-            ( {} ) AS A
-            JOIN 
-            ( {} ) AS B ON 1=1
-        ) 
-        """
-        div_query = sql.SQL(div_query_format).format(
-            abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
-        return div_query
 
-    def get_partof_query(self, qs, acc):
-        # SELECT
-        partof_query = sql.SQL("""SELECT """)
-        partof_query += sql.SQL(' + ').join(
-            [sql.SQL('({} * CAST({}.{} AS REAL)) ').format(sign, sql.Identifier(f'X{i}'), sql.Identifier(node.lower())) for i, (_, sign, node, _) in enumerate(qs)]
-        )
-        partof_query += sql.SQL(" AS {}").format(sql.Identifier(acc.lower()))
-        # FROM
-        partof_query += sql.SQL(" FROM ( ")
-        for i, (*_, query) in enumerate(qs):
-            partof_query += sql.SQL(f"( ") + query + sql.SQL(" ) AS {}").format(sql.Identifier(f'X{i}'))
-            if i == 0:
-                partof_query += sql.SQL(" JOIN ")
-            elif i == (len(qs)-1):
-                partof_query += sql.SQL(" ON 1=1 ")
-            else:
-                partof_query += sql.SQL(" ON 1=1 JOIN ")
-        partof_query += sql.SQL(" )")
-        return partof_query
 
 class GraphDrawer():
     def __init__(
@@ -293,47 +253,69 @@ class OntologySystem():
 
     def get_SQL(self, sparql_results, account, quarter, year, sub_account=None): 
         # sub_account: {acc_name: ('*', 1.1)}
-        # TODO: ratio accounts should apply some functions
         sparql_results = list(map(lambda x: tuple(self.graph_drawer.convert_to_string(acc) for acc in x), list(sparql_results)))
         role_dict = defaultdict(list)
         for s, p, o in sparql_results:
-            if s not in role_dict[o]:
-                role_dict[o].append((s, p))
+            o_lv = int(self.ACC_DICT[o]['Account_Level'])
+            s_lv = int(self.ACC_DICT[s]['Account_Level'])
+            if (s, s_lv) not in role_dict[(o, o_lv)]:
+                role_dict[(o, o_lv)].append((s, s_lv, p))
+
+        role_dict_sorted = defaultdict(list)
+        for k, v in sorted(role_dict.items(), key=lambda x: x[0][1], reverse=False):
+            role_dict_sorted[k[0]] += list(map(lambda x: (x[0], x[2]), v))
         
         # leaf node
         base_query_format = """SELECT (T.value){} AS {} FROM {} AS T """
         # search from top to bottom until reach all the leaf node
         query_dict = defaultdict(dict)
-        for parent, children in role_dict.items():
-            # start from account node
-            for child, role in children:
-                if child not in role_dict:
-                    # leaf node
-                    if query_dict[child].get('parents') is None:
-                        query_dict[child]['parents'] = []
+        if role_dict_sorted:
+            for parent, children in role_dict_sorted.items():
+                # start from account node
+                for child, role in children:
+                    if child not in role_dict_sorted:
+                        # leaf node
+                        if query_dict[child].get('parents') is None:
+                            query_dict[child]['parents'] = []
 
-                    # check if has subject_account 
-                    if  (sub_account is not None) and (child in sub_account):
-                        apply, apply_number = sub_account[child]
-                        sub_apply_query = sql.SQL(' ').join([sql.SQL(apply), apply_number])
-                    else:
-                        sub_apply_query = sql.SQL('')
-                    
-                    acc_knowledge = self.ACC_DICT[child]['group'].lower().split('-')[0]
-                    view_table = f"vt_{acc_knowledge.lower()}_005930"
-                    select_format = sql.SQL(base_query_format).format(sub_apply_query, sql.Identifier(child.lower()), sql.Identifier(view_table))
-                    where_format = sql.SQL("""WHERE T.bsns_year = {} AND T.quarter = {} AND T.account = {}""").format(year, quarter, child)
-                    query = select_format + where_format
-                    
-                    query_dict[child]['query'] = query
-                    query_dict[child]['sign'] = 1.0 if self.ACC_DICT[child]['Account_Property'].lower() == 'positive' else -1.0
-                    query_dict[child]['parents'].append((role, parent))
+                        # check if has subject_account 
+                        if  (sub_account is not None) and (child in sub_account):
+                            apply, apply_number = sub_account[child]
+                            sub_apply_query = sql.SQL(' ').join([sql.SQL(apply), apply_number])
+                        else:
+                            sub_apply_query = sql.SQL('')
+                        
+                        acc_knowledge = self.ACC_DICT[child]['group'].lower().split('-')[0]
+                        view_table = f"vt_{acc_knowledge.lower()}_005930"
+                        select_format = sql.SQL(base_query_format).format(sub_apply_query, sql.Identifier(child.lower()), sql.Identifier(view_table))
+                        where_format = sql.SQL("""WHERE T.bsns_year = {} AND T.quarter = {} AND T.account = {}""").format(year, quarter, child)
+                        query = select_format + where_format
+                        
+                        query_dict[child]['query'] = query
+                        
+                        query_dict[child]['sign'] = 1.0 if self.ACC_DICT[child]['Account_Property'].lower() == 'positive' else -1.0
+                        query_dict[child]['parents'].append((role, parent))
+        else:
+            sub_apply_query = sql.SQL('')
+            acc_knowledge = self.ACC_DICT[account]['group'].lower().split('-')[0]
+            view_table = f"vt_{acc_knowledge.lower()}_005930"
+            select_format = sql.SQL(base_query_format).format(sub_apply_query, sql.Identifier(account.lower()), sql.Identifier(view_table))
+            where_format = sql.SQL("""WHERE T.bsns_year = {} AND T.quarter = {} AND T.account = {}""").format(year, quarter, account)
+            query = select_format + where_format
+
+            query_dict[account]['query'] = query
+                        
+            query_dict[account]['sign'] = 1.0 if self.ACC_DICT[account]['Account_Property'].lower() == 'positive' else -1.0
+            query_dict[account]['parents'] = None
+
+            return query_dict[account]['query']
+            # already leaf node
 
         # sort the nodes to make sure nodes with the leaf nodes comes first
-        role_dict_sorted = dict(sorted(list(role_dict.items()), 
+        role_dict_sorted_reverse = dict(sorted(list(role_dict_sorted.items()), 
             key=lambda x: all([acc in list(query_dict.keys()) for acc, _ in x[1]]), reverse=True))
-        
-        for acc, childrens in role_dict_sorted.items():
+        # print(role_dict_sorted)
+        for acc, childrens in role_dict_sorted_reverse.items():
             acc_sign = 1.0 if self.ACC_DICT[acc]['Account_Property'].lower() == 'positive' else -1.0
             query_dict[acc]['sign'] = acc_sign
             qs = []
@@ -345,9 +327,67 @@ class OntologySystem():
                     query_dict[child]['query'])
                 )
             if role.lower() != 'partof':
-                query_dict[acc]['query'] = self.sparql.get_div_query(qs, acc)
+                query_dict[acc]['query'] = self.get_div_query(qs, acc)
             else:
-                query_dict[acc]['query'] = self.sparql.get_partof_query(qs, acc)
-            
+                query_dict[acc]['query'] = self.get_partof_query(qs, acc)
+        
+
+
 
         return query_dict[account]['query']
+
+    # TODO: move these to dialog manager or db handler
+    def get_div_query(self, qs, acc):
+        X, Y = qs
+        if (X[0] == 'denominator') and (Y[0] == 'numerator'):
+            B = X
+            A = Y
+        elif (Y[0] == 'denominator') and (X[0] == 'numerator'):
+            B = Y
+            A = X
+        A_sign, A_node, A_q = A[1:]
+        B_sign, B_node, B_q = B[1:]
+        div_query_format = """
+        SELECT ({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
+        FROM (
+            ( {} ) AS A
+            JOIN 
+            ( {} ) AS B ON 1=1
+        ) 
+        """
+        div_query = sql.SQL(div_query_format).format(
+            abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
+        return div_query
+
+    def get_partof_query(self, qs, acc):
+        # SELECT
+        partof_query = sql.SQL("""SELECT """)
+        partof_query += sql.SQL(' + ').join(
+            [sql.SQL('({} * CAST({}.{} AS REAL)) ').format(sign, sql.Identifier(f'X{i}'), sql.Identifier(node.lower())) for i, (_, sign, node, _) in enumerate(qs)]
+        )
+        partof_query += sql.SQL(" AS {}").format(sql.Identifier(acc.lower()))
+        # FROM
+        partof_query += sql.SQL(" FROM ( ")
+        for i, (*_, query) in enumerate(qs):
+            partof_query += sql.SQL(f"( ") + query + sql.SQL(" ) AS {}").format(sql.Identifier(f'X{i}'))
+            if i == 0:
+                partof_query += sql.SQL(" JOIN ")
+            elif i == (len(qs)-1):
+                partof_query += sql.SQL(" ON 1=1 ")
+            else:
+                partof_query += sql.SQL(" ON 1=1 JOIN ")
+        partof_query += sql.SQL(" )")
+        return partof_query
+
+
+
+def check(role_dict, acc, trg_acc):
+    if trg_acc in role_dict[acc]:
+        return True
+    
+    for sub_acc in role_dict[acc]:
+        o = check(role_dict, sub_acc, trg_acc)
+        if o:
+            return o
+    else:
+        return False

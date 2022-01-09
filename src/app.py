@@ -44,7 +44,7 @@ def main():
     st.set_page_config(
         page_title="Demo for FSQA", 
         page_icon=":bulb:",
-        layout="centered", # "wide",
+        layout= 'wide', # centered / "wide",
         initial_sidebar_state="collapsed"
     )
     # st.sidebar.title("Navigation")

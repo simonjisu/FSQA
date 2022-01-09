@@ -74,7 +74,7 @@ class DialogManager(object):
         self.global_turn += 1
 
     def _update_today(self):
-        self.today = dt.now()
+        self.today = dt.strptime('2021.12.25', '%Y.%m.%d') # dt.now()
 
     def _update_intent(self, intent):
         self.intent = intent
@@ -183,6 +183,7 @@ class DialogManager(object):
                     ref_year = self.today.year + 1
                 else:
                     ref_year = self.today.year
+                    recalculate_acc_year = True
                 ref_Q = None
             elif 'quarter' in date_keyword:
                 k = date_keyword.split(' ', 1)[0]
@@ -215,6 +216,7 @@ class DialogManager(object):
                     # user's talking quarter = kq
                     ref_Q = kq
                     ref_year = self.today.year
+                    recalculate_acc_year = True
             else:
                 error = True
 

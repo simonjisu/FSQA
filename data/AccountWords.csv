@@ -14,7 +14,7 @@ financial,TIME,PAST,past,TIME,PAST,decrease,APPLY,DOWN
 last,TIME,PAST,final,TIME,REL,decreases,APPLY,DOWN
 upcoming,TIME,FUTURE,last,TIME,PAST,decreased,APPLY,DOWN
 next,TIME,FUTURE,next,TIME,FUTURE,decline,APPLY,DOWN
-current,TIME,FUTURE,upcoming,TIME,FUTURE,declined,APPLY,DOWN
+current,TIME,REL,upcoming,TIME,FUTURE,declined,APPLY,DOWN
 coming,TIME,FUTURE,following,TIME,FUTURE,reduce,APPLY,DOWN
 following,TIME,FUTURE,coming,TIME,FUTURE,reduced,APPLY,DOWN
 present,TIME,FUTURE,present,TIME,FUTURE,change,APPLY,DOWN

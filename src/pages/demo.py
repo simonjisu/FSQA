@@ -38,7 +38,7 @@ def write(data_path, modules):
     In 'What-if:based on fact' questions, users might want to ask the effect to a certain account 
     by changing another account value. 
     
-    - For example, "What happens to the operating income when the cost of sales increases by 10% in this year?"
+    - For example, "What happens to the operating income when the cost of sales increases by 10% in the last year?"
 
     ### What-if:forecasting
 
@@ -56,16 +56,18 @@ def write(data_path, modules):
     # with col2:
     #     st.write('## Available Balance Sheet Accounts')
     #     st.selectbox('', options=dialog_manager.bs_account_names)
-        
+    st.write('## Try your self')
     with st.form(key='Form'): 
         sentence = st.text_input('Insert a questions')
         submit_button = st.form_submit_button(label='Submit')
 
     if submit_button:
-        st.write('### Scenario Question')
+        st.write('## Scenario Question')
         st.write(f'**{sentence}**')
         nlu_results = nlu_module(text=sentence)
         error, key_information = dialog_manager.post_process(nlu_results)
+        # st.write(nlu_results)
+        # st.write(key_information)
         if error:
             st.error(key_information)
 
@@ -76,7 +78,7 @@ def write(data_path, modules):
             knowledge, account = key_information['target_account'].split('.')
             year = key_information['year']
             quarter = key_information['quarter']
-        
+
             if intent != 'IF.forecast':
                 if key_information.get('subject_account'):
                     sub_account = {key_information['subject_account'].split('.')[1]: key_information['subject_apply']}
@@ -88,7 +90,7 @@ def write(data_path, modules):
                 results = ontology_module.sparql.query(knowledge_query)
                 nx_graph = ontology_module.get_nx_graph(results)
                 sub_tree = nx.bfs_successors(nx_graph, source=account)
-                sparql_results = ontology_module.sparql.get_sub_tree_relations(dict(sub_tree))
+                sparql_results = list(ontology_module.sparql.get_sub_tree_relations(dict(sub_tree)))
                 # Get Query Part
                 query_statement = ontology_module.get_SQL(sparql_results, account, quarter, year, sub_account)
                 query_result = database.query(query_statement)
@@ -96,10 +98,10 @@ def write(data_path, modules):
                 ontology_module.get_graph(sparql_results, show=True)
                 st.write('Query Result: ')
                 st.write(query_result)
-
-                htmlfile = open(ontology_module.graph_drawer.show_file_name, 'r', encoding='utf-8')
-                source_code = htmlfile.read() 
-                components.html(source_code, height=600, width=700)
+                if sparql_results:
+                    htmlfile = open(ontology_module.graph_drawer.show_file_name, 'r', encoding='utf-8')
+                    source_code = htmlfile.read() 
+                    components.html(source_code, height=600, width=700)
                 
             else:
                 model_type = key_information.get('model')
@@ -116,10 +118,6 @@ def write(data_path, modules):
                 st.write(model.summary())
 
             st.write('')
-            if intent != 'IF.forecast':
-                st.image(str(data_path / 'figs' / 'app_knowledge.png'))
-            else:
-                st.image(str(data_path / 'figs' / 'app_prediction.png'))
 
         with st.expander("Results from each module in json"):
             st.write("**NLU module result: **")

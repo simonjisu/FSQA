@@ -21,16 +21,19 @@ class SparqlHandler():
 
     def get_sub_tree_relations(self, sub_tree):
         nodes = self.get_related_nodes_from_sub_tree(sub_tree)
-        query_statement = """
-        SELECT ?s ?p ?o 
-        WHERE { 
-            ?s rdf:type acc:Account .
-            VALUES ?o { """ + f'{" ".join(nodes)}' + """ }
-            VALUES ?p { acc:partOf acc:denominator acc:numerator } 
-            ?s ?p ?o .
-        }
-        """
-        return self.query(query_statement)
+        if len(nodes) >= 1:
+            query_statement = """
+            SELECT ?s ?p ?o 
+            WHERE { 
+                ?s rdf:type acc:Account .
+                VALUES ?o { """ + f'{" ".join(nodes)}' + """ }
+                VALUES ?p { acc:partOf acc:denominator acc:numerator } 
+                ?s ?p ?o .
+            }
+            """
+            return self.query(query_statement)
+        else:
+            return []  # leaf node
 
     def get_predefined_knowledge(self, knowledge:str):
         # BS, IS, BSR, ISR
@@ -105,6 +108,15 @@ class SparqlHandler():
             """
         )
         return knowledge_queries[knowledge]
+
+    def _role_dict(sparql_results):
+        role_dict = defaultdict(list)
+        for s, p, o in sparql_results:
+            s, p, o = map(convert_to_string, [s, p, o])
+            if s == 'CalendarOneYear' or o == 'CalendarOneYear':
+                continue
+            if s not in role_dict[o]:
+                role_dict[o].append(s)
 
     def get_role_dict(self, knowledge):
         knowledge_query = self.get_predefined_knowledge(knowledge=knowledge)
