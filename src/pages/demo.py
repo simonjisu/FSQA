@@ -5,6 +5,7 @@ import streamlit as st
 import spacy_streamlit
 import sqlparse
 import streamlit.components.v1 as components
+from PIL import Image
 
 def write(data_path, modules):
     nlu_module, dialog_manager, ontology_module, database = modules
@@ -14,7 +15,9 @@ def write(data_path, modules):
 
     GitHub: https://github.com/simonjisu/FSQA
     """)
-    
+    image = Image.open(data_path / 'framework.png')
+    st.image(image, caption='A Framework for Enhancing Boardroom TODS with Financial Ontology and Embedded Machine Learning')
+
     st.write('# Financial Statements Knowledge Graph')
     st.write('You can check what kinds of account is available.')
     graph_option = st.selectbox('Show Graph', ('income statement', 'balance sheet'))
