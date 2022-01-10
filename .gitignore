@@ -138,3 +138,4 @@ checkpoints/
 setting_files/x*.yml
 data/*
 src/data/best_model.ckpt
+src/data/nx.html
