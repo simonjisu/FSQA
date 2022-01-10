@@ -347,7 +347,7 @@ class OntologySystem():
             A = X
         A_sign, A_node, A_q = A[1:]
         B_sign, B_node, B_q = B[1:]
-        if 'turnoverperiod' in acc:
+        if 'turnoverperiod' in acc.lower():
             div_query_format = """
             SELECT 365*({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
             FROM (
