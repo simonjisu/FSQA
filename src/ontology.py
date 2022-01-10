@@ -347,16 +347,31 @@ class OntologySystem():
             A = X
         A_sign, A_node, A_q = A[1:]
         B_sign, B_node, B_q = B[1:]
-        div_query_format = """
-        SELECT ({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
-        FROM (
-            ( {} ) AS A
-            JOIN 
-            ( {} ) AS B ON 1=1
-        ) 
-        """
-        div_query = sql.SQL(div_query_format).format(
-            abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
+        if 'turnoverperiod' in acc:
+            div_query_format = """
+            SELECT 365*({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
+            FROM (
+                ( {} ) AS A
+                JOIN 
+                ( {} ) AS B ON 1=1
+            ) 
+            """
+            
+            div_query = sql.SQL(div_query_format).format(
+                abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
+
+        else:
+            div_query_format = """
+            SELECT ({} * CAST(A.{} AS REAL)) / ({} * CAST(B.{} AS REAL)) AS {}
+            FROM (
+                ( {} ) AS A
+                JOIN 
+                ( {} ) AS B ON 1=1
+            ) 
+            """
+            
+            div_query = sql.SQL(div_query_format).format(
+                abs(A_sign), sql.Identifier(A_node.lower()), abs(B_sign), sql.Identifier(B_node.lower()), sql.Identifier(acc.lower()), A_q, B_q)
         return div_query
 
     def get_partof_query(self, qs, acc):
