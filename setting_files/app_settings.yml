@@ -28,3 +28,6 @@ dialog:
 nlu:
   checkpoint_file: 'best_model.ckpt'
   labels_file: 'labels_simple.json'
+
+opendart:
+  apikey: ''

@@ -1,0 +1,466 @@
+@prefix acc: <http://fsqa.com/acc#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+acc:BalanceSheet a acc:Account,
+        rdfs:Class ;
+    rdfs:label "재무상태표"^^xsd:string ;
+    acc:Account_Belonging acc:FinancialStatement ;
+    acc:Account_Level "0"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:AssetsAbstract,
+        acc:LiabilitiesAndEquities .
+
+acc:FinancialStatement a rdfs:Class .
+
+acc:IncomeStatement a acc:Account,
+        rdfs:Class ;
+    rdfs:label "손익계산서"^^xsd:string ;
+    acc:Account_Belonging acc:FinancialStatement ;
+    acc:Account_Level "0"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:Profit .
+
+acc:MathFunction a rdfs:Class .
+
+acc:Relation a rdfs:Class .
+
+acc:YoYRatio a acc:MathFunction .
+
+acc:addition a acc:MathFunction .
+
+acc:hasPart a acc:InverseRelation ;
+    owl:inverseOf acc:partOf .
+
+acc:isDenominatorOf a acc:InverseRelation ;
+    owl:inverseOf acc:denominator .
+
+acc:isNumeratorOf a acc:InverseRelation ;
+    owl:inverseOf acc:numerator .
+
+acc:multiplication a acc:MathFunction .
+
+acc:BondsIssued a acc:Account ;
+    rdfs:label "사채"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:NoncurrentLiabilities .
+
+acc:CashAndCashEquivalents a acc:Account ;
+    rdfs:label "현금및현금성자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:CurrentAssets .
+
+acc:EquitiesAbstract a acc:Account ;
+    rdfs:label "자본총계"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "2"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:LiabilitiesAndEquities .
+
+acc:FinanceIncome a acc:Account ;
+    rdfs:label "금융수익"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:ProfitBeforeTax .
+
+acc:FinancialExpenses a acc:Account ;
+    rdfs:label "금융비용"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Negative"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:ProfitBeforeTax .
+
+acc:IntangibleAssets a acc:Account ;
+    rdfs:label "무형자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:NoncurrentAssets .
+
+acc:LongTermBorrowings a acc:Account ;
+    rdfs:label "장기차입금"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:NoncurrentLiabilities .
+
+acc:PropertyPlantAndEquipment a acc:Account ;
+    rdfs:label "유형자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:NoncurrentAssets .
+
+acc:ShortTermBorrowings a acc:Account ;
+    rdfs:label "단기차입금"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:partOf acc:CurrentLiabilities .
+
+acc:partOf a acc:Relation ;
+    rdfs:label "partOf"^^xsd:string .
+
+acc:AdvancesCustomers a acc:Account ;
+    rdfs:label "선수금"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:AdvancesCustomersTurnoverPeriod ;
+    acc:partOf acc:CurrentLiabilities .
+
+acc:CostOfSales a acc:Account ;
+    rdfs:label "매출원가"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "5"^^xsd:string ;
+    acc:Account_Property "Negative"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:CostOfSalesRatio ;
+    acc:partOf acc:GrossProfit .
+
+acc:IncomeTaxExpense a acc:Account ;
+    rdfs:label "법인세비용"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "2"^^xsd:string ;
+    acc:Account_Property "Negative"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:IncomeTaxRatio ;
+    acc:partOf acc:Profit .
+
+acc:Inventories a acc:Account ;
+    rdfs:label "재고자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:InventoriesTurnoverPeriod ;
+    acc:partOf acc:CurrentAssets .
+
+acc:PrepaidExpenses a acc:Account ;
+    rdfs:label "선급비용"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:PrepaidExpensesTurnoverPeriod ;
+    acc:partOf acc:CurrentAssets .
+
+acc:SellingGeneralAdministrativeExpenses a acc:Account ;
+    rdfs:label "판매비와관리비"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Negative"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:SellingGeneralAdministrativeRatio ;
+    acc:partOf acc:OperatingIncome .
+
+acc:TradeAndOtherCurrentPayables a acc:Account ;
+    rdfs:label "매입채무 및 기타유동채무"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:TradePayablesTurnoverPeriod ;
+    acc:partOf acc:CurrentLiabilities .
+
+acc:TradeAndOtherCurrentReceivables a acc:Account ;
+    rdfs:label "매출채권"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:numerator acc:TradeReceivableTurnoverPeriod ;
+    acc:partOf acc:CurrentAssets .
+
+acc:denominator a acc:Relation ;
+    acc:partOf acc:division .
+
+acc:division a acc:MathFunction ;
+    acc:hasPart acc:denominator,
+        acc:numerator .
+
+acc:numerator a acc:Relation ;
+    acc:partOf acc:division .
+
+acc:AssetsAbstract a acc:Account ;
+    rdfs:label "자산총계"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "1"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:CurrentAssets,
+        acc:NoncurrentAssets ;
+    acc:partOf acc:BalanceSheet .
+
+acc:GrossProfit a acc:Account ;
+    rdfs:label "매출총이익"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "4"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:CostOfSales,
+        acc:Revenue ;
+    acc:partOf acc:OperatingIncome .
+
+acc:IncomeTaxRatio a acc:Account ;
+    rdfs:label "법인세율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:ProfitBeforeTax ;
+    acc:isNumeratorOf acc:IncomeTaxExpense ;
+    acc:partOf acc:Ratios .
+
+acc:LiabilitiesAbstract a acc:Account ;
+    rdfs:label "부채총계"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "2"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:CurrentLiabilities,
+        acc:NoncurrentLiabilities ;
+    acc:partOf acc:LiabilitiesAndEquities .
+
+acc:LiabilitiesAndEquities a acc:Account ;
+    rdfs:label "부채와자본총계"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "1"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:EquitiesAbstract,
+        acc:LiabilitiesAbstract ;
+    acc:partOf acc:BalanceSheet .
+
+acc:NoncurrentAssets a acc:Account ;
+    rdfs:label "비유동자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:IntangibleAssets,
+        acc:PropertyPlantAndEquipment ;
+    acc:partOf acc:AssetsAbstract .
+
+acc:NoncurrentLiabilities a acc:Account ;
+    rdfs:label "비유동부채"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:BondsIssued,
+        acc:LongTermBorrowings ;
+    acc:partOf acc:LiabilitiesAbstract .
+
+acc:OperatingIncome a acc:Account ;
+    rdfs:label "영업이익"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:GrossProfit,
+        acc:SellingGeneralAdministrativeExpenses ;
+    acc:partOf acc:ProfitBeforeTax .
+
+acc:ProfitRatio a acc:Account ;
+    rdfs:label "순이익율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:Profit ;
+    acc:partOf acc:Ratios .
+
+acc:SalesAndSellingGeneralAdministrativeRatio a acc:Account ;
+    rdfs:label "매출 및 판관 비율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:hasPart acc:CostOfSalesRatio,
+        acc:SellingGeneralAdministrativeRatio ;
+    acc:partOf acc:Ratios .
+
+acc:AdvancesCustomersTurnoverPeriod a acc:Account ;
+    rdfs:label "선수금 회전기간"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:AdvancesCustomers,
+        acc:CalendarOneYear ;
+    acc:partOf acc:Ratios .
+
+acc:CostOfSalesRatio a acc:Account ;
+    rdfs:label "매출원가율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:CostOfSales ;
+    acc:partOf acc:Ratios,
+        acc:SalesAndSellingGeneralAdministrativeRatio .
+
+acc:CurrentLiabilities a acc:Account ;
+    rdfs:label "유동부채"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:AdvancesCustomers,
+        acc:ShortTermBorrowings,
+        acc:TradeAndOtherCurrentPayables ;
+    acc:partOf acc:LiabilitiesAbstract .
+
+acc:InventoriesTurnoverPeriod a acc:Account ;
+    rdfs:label "재고자산 회전기간"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:CalendarOneYear,
+        acc:Inventories ;
+    acc:partOf acc:Ratios .
+
+acc:PrepaidExpensesTurnoverPeriod a acc:Account ;
+    rdfs:label "선급비용 회전기간"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:CalendarOneYear,
+        acc:PrepaidExpenses ;
+    acc:partOf acc:Ratios .
+
+acc:Profit a acc:Account ;
+    rdfs:label "당기순이익(손실)"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "1"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:IncomeTaxExpense,
+        acc:ProfitBeforeTax ;
+    acc:numerator acc:ProfitRatio ;
+    acc:partOf acc:IncomeStatement .
+
+acc:SellingGeneralAdministrativeRatio a acc:Account ;
+    rdfs:label "판관비율"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:SellingGeneralAdministrativeExpenses ;
+    acc:partOf acc:Ratios,
+        acc:SalesAndSellingGeneralAdministrativeRatio .
+
+acc:TradePayablesTurnoverPeriod a acc:Account ;
+    rdfs:label "매입채무 회전기간"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:CalendarOneYear,
+        acc:TradeAndOtherCurrentPayables ;
+    acc:partOf acc:Ratios .
+
+acc:TradeReceivableTurnoverPeriod a acc:Account ;
+    rdfs:label "매출채권 회전기간"^^xsd:string ;
+    acc:Account_Belonging acc:Ratios ;
+    acc:Account_Level "98"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:isDenominatorOf acc:Revenue ;
+    acc:isNumeratorOf acc:CalendarOneYear,
+        acc:TradeAndOtherCurrentReceivables ;
+    acc:partOf acc:Ratios .
+
+acc:CalendarOneYear a time:DateTimeDescription ;
+    rdfs:label "365"^^xsd:string ;
+    acc:numerator acc:AdvancesCustomersTurnoverPeriod,
+        acc:InventoriesTurnoverPeriod,
+        acc:PrepaidExpensesTurnoverPeriod,
+        acc:TradePayablesTurnoverPeriod,
+        acc:TradeReceivableTurnoverPeriod ;
+    time:Duration "365"^^xsd:string ;
+    time:hasDuration time:day .
+
+acc:CurrentAssets a acc:Account ;
+    rdfs:label "유동자산"^^xsd:string ;
+    acc:Account_Belonging acc:BalanceSheet ;
+    acc:Account_Level "3"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:hasPart acc:CashAndCashEquivalents,
+        acc:Inventories,
+        acc:PrepaidExpenses,
+        acc:TradeAndOtherCurrentReceivables ;
+    acc:partOf acc:AssetsAbstract .
+
+acc:ProfitBeforeTax a acc:Account ;
+    rdfs:label "법인세비용차감전순이익(손실)"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "2"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:denominator acc:IncomeTaxRatio ;
+    acc:hasPart acc:FinanceIncome,
+        acc:FinancialExpenses,
+        acc:OperatingIncome ;
+    acc:partOf acc:Profit .
+
+acc:Revenue a acc:Account ;
+    rdfs:label "수익(매출액)"^^xsd:string ;
+    acc:Account_Belonging acc:IncomeStatement ;
+    acc:Account_Level "5"^^xsd:string ;
+    acc:Account_Property "Positive"^^xsd:string ;
+    acc:Account_Type "Value"^^xsd:string ;
+    acc:denominator acc:AdvancesCustomersTurnoverPeriod,
+        acc:CostOfSalesRatio,
+        acc:InventoriesTurnoverPeriod,
+        acc:PrepaidExpensesTurnoverPeriod,
+        acc:ProfitRatio,
+        acc:SellingGeneralAdministrativeRatio,
+        acc:TradePayablesTurnoverPeriod,
+        acc:TradeReceivableTurnoverPeriod ;
+    acc:partOf acc:GrossProfit .
+
+acc:Ratios a acc:Account ;
+    rdfs:label "재무비율"^^xsd:string ;
+    acc:Account_Belonging acc:FinancialStatement ;
+    acc:Account_Level "0"^^xsd:string ;
+    acc:Account_Type "Ratio"^^xsd:string ;
+    acc:hasPart acc:AdvancesCustomersTurnoverPeriod,
+        acc:CostOfSalesRatio,
+        acc:IncomeTaxRatio,
+        acc:InventoriesTurnoverPeriod,
+        acc:PrepaidExpensesTurnoverPeriod,
+        acc:ProfitRatio,
+        acc:SalesAndSellingGeneralAdministrativeRatio,
+        acc:SellingGeneralAdministrativeRatio,
+        acc:TradePayablesTurnoverPeriod,
+        acc:TradeReceivableTurnoverPeriod .
+

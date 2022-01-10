@@ -1,0 +1,44 @@
+acc,acc_name_kor,acc_name_eng,group
+CurrentAssets,유동자산,Current Assets,BS-Value-3
+CashAndCashEquivalents,현금및현금성자산,Cash and Cash Equivalents,BS-Value-4
+TradeAndOtherCurrentReceivables,매출채권,Trade and Other Current Receivables,BS-Value-4
+PrepaidExpenses,선급비용,Prepaid Expenses,BS-Value-4
+Inventories,재고자산,Inventories,BS-Value-4
+NoncurrentAssets,비유동자산,Noncurrent Assets,BS-Value-3
+PropertyPlantAndEquipment,유형자산,Property Plant and Equipment,BS-Value-4
+IntangibleAssets,무형자산,Intangible Assets,BS-Value-4
+AssetsAbstract,자산총계,Assets,BS-Value-1
+CurrentLiabilities,유동부채,Current Liabilities,BS-Value-3
+TradeAndOtherCurrentPayables,매입채무 및 기타유동채무,Trade and Other Current Payables,BS-Value-4
+ShortTermBorrowings,단기차입금,Short Term Borrowings,BS-Value-4
+AdvancesCustomers,선수금,Advances Customers,BS-Value-4
+NoncurrentLiabilities,비유동부채,Noncurrent Liabilities,BS-Value-3
+BondsIssued,사채,Bonds Issued,BS-Value-4
+LongTermBorrowings,장기차입금,Long Term Borrowings,BS-Value-4
+LiabilitiesAbstract,부채총계,Liabilities,BS-Value-2
+EquitiesAbstract,자본총계,Equities,BS-Value-2
+LiabilitiesAndEquities,부채와자본총계,Liabilities and Equities,BS-Value-1
+TradeReceivableTurnoverPeriod,매출채권 회전기간,Trade Receivable Turnover Period,BS-Ratio-98
+PrepaidExpensesTurnoverPeriod,선급비용 회전기간,Prepaid Expenses Turnover Period,BS-Ratio-98
+InventoriesTurnoverPeriod,재고자산 회전기간,Inventories Turnover Period,BS-Ratio-98
+TradePayablesTurnoverPeriod,매입채무 회전기간,Trade Payables Turnover Period,BS-Ratio-98
+AdvancesCustomersTurnoverPeriod,선수금 회전기간,Advances Customers Turnover Period,BS-Ratio-98
+Revenue,수익(매출액),Revenue,IS-Value-5
+CostOfSales,매출원가,Cost of Sales,IS-Value-5
+GrossProfit,매출총이익,Gross Profit,IS-Value-4
+SellingGeneralAdministrativeExpenses,판매비와관리비,Selling General Administrative Expenses,IS-Value-4
+OperatingIncome,영업이익,Operating Income,IS-Value-3
+FinanceIncome,금융수익,Finance Income,IS-Value-3
+FinancialExpenses,금융비용,Financial Expenses,IS-Value-3
+ProfitBeforeTax,법인세비용차감전순이익(손실),Profit Before Tax,IS-Value-2
+IncomeTaxExpense,법인세비용,IncomeTax Expense,IS-Value-2
+Profit,당기순이익(손실),Profit,IS-Value-1
+CostOfSalesRatio,매출원가율,Cost of Sales Ratio,IS-Ratio-98
+SellingGeneralAdministrativeRatio,판관비율,Selling General Administrative Ratio,IS-Ratio-98
+SalesAndSellingGeneralAdministrativeRatio,매출 및 판관 비율,Sales and Selling General Administrative Ratio,IS-Ratio-98
+IncomeTaxRatio,법인세율,Income Tax Ratio,IS-Ratio-98
+ProfitRatio,순이익율,Profit Ratio,IS-Ratio-98
+IncomeStatement,손익계산서,Income Statement,IS-Value-0
+BalanceSheet,재무상태표,Balance Sheet,BS-Value-0
+CalendarOneYear,365 일,365 days,TIME-Value-99
+Ratios,재무비율,Finance Ratio,FS-Ratio-0

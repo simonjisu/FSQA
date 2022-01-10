@@ -40,7 +40,7 @@ class DialogManager(object):
         for typ in ['year', 'quarter', 'words']:
             df_temp = df.loc[:, [typ, f'{typ}_tag', f'{typ}_desc']]
             df_temp = df_temp.loc[~df_temp[typ].isna(), :]
-            for _, (w, t, desc) in df_temp.iterrows():
+            for _, (w, _, desc) in df_temp.iterrows():
                 if typ in ['year', 'quarter']:
                     self.words_dict['TIME'].add((self.tokenizer.spacy_lemma(w), desc))
                 else:
@@ -74,7 +74,7 @@ class DialogManager(object):
         self.global_turn += 1
 
     def _update_today(self):
-        self.today = dt.strptime('2021.12.25', '%Y.%m.%d') # dt.now()
+        self.today = dt.now() # dt.strptime('2021.12.25', '%Y.%m.%d') # dt.now()
 
     def _update_intent(self, intent):
         self.intent = intent
@@ -92,35 +92,42 @@ class DialogManager(object):
         self._update_today()
         intent = nlu_results['intent']
         tags = nlu_results['tags']
-        print(tags)
+        print(intent, tags)
 
         return self._pots_process_key_information(intent, tags)
 
     def _pots_process_key_information(self, intent, tags):
         error = False
         key_information = defaultdict()
-        year, quarter = self._get_account_year(tags.get('TIME'))
-        if year == True:
-            error = year
-            message = quarter
-            return error, message
+        account_year, account_quarter, error, text_warining = self._get_account_year(tags.get('TIME'))
+        if error == True:
+            return error, text_warining
         
         key_information['intent'] = intent
+
+        # check if the account is proper accoount!
+        if len(tags['ACCOUNTS']) >= 1:
+            for acc_name, _ in tags.get('ACCOUNTS'):
+                if acc_name not in self.eng2acc:
+                    error = True
+                    return error, None, f'There is a non-proper account name({acc_name}) in the sentence.'
+
+
         if intent == 'PAST.value':
             if len(tags['ACCOUNTS']) == 1:
                 acc_name, knowlegde = tags.get('ACCOUNTS')[0]
                 key_information['target_account'] = f'{knowlegde}.{self.eng2acc[acc_name]}'
-                key_information['year'] = year
-                key_information['quarter'] = '4Q' if quarter is None else f'{quarter}Q'  # if None sum all quarter values
+                key_information['year'] = account_year
+                key_information['quarter'] = '4Q' if account_quarter is None else f'{account_quarter}Q'  # if None sum all quarter values
             else:
                 error = True
-                return error, f'There are {len(tags["ACCOUNTS"])} tags in a sentence.'
+                return error, None, f'There are {len(tags["ACCOUNTS"])} tags in a sentence.'
                 # raise ValueError('There are two tags in a sentence which one did you mean?')
         elif intent == 'IF.fact':
             # subject_account, target_account, apply
             if len(tags['ACCOUNTS']) > 1:
-                key_information['year'] = year
-                key_information['quarter'] = '4Q' if quarter is None else f'{quarter}Q'
+                key_information['year'] = account_year
+                key_information['quarter'] = '4Q' if account_quarter is None else f'{account_quarter}Q'
                 
                 accs = tags.get('ACCOUNTS')
                 a_acc_name, a_knowledge = accs[0]
@@ -144,7 +151,7 @@ class DialogManager(object):
                 if mul == True:
                     error = True
                     message = number
-                    return error, message
+                    return error, None, message
                 
                 key_information['subject_apply'] = (mul, number)
             else:
@@ -154,22 +161,31 @@ class DialogManager(object):
             if len(tags['ACCOUNTS']) == 1:
                 acc_name, knowlegde = tags.get('ACCOUNTS')[0]
                 key_information['target_account'] = f'{knowlegde}.{self.eng2acc[acc_name]}'
-                key_information['year'] = year
-                key_information['quarter'] = '4Q' if quarter is None else f'{quarter}Q'
+                key_information['year'] = account_year
+                key_information['quarter'] = '4Q' if account_quarter is None else f'{account_quarter}Q'
                 key_information['model'] = 'linear'
             else:
                 error = True
-                return error, f'There are {len(tags["ACCOUNTS"])} tags in a sentence.'
+                return error, None, f'There are {len(tags["ACCOUNTS"])} tags in a sentence.'
         else:
             # None case
             key_information['target_account'] = None
             
-        return error, key_information
+        return error, key_information, text_warining
 
     def _get_account_year(self, date_keyword:Union[str, None]) -> int:
+        """
+        Report comes out:
+        last_Y's 4Q report: cur_Y / 03.01 ~ 03.31  == year report
+        cur_Y's 1Q report: cur_Y / 04.01 ~ 04.30 
+        cur_Y's 2Q report: cur_Y / 07.01 ~ 07.31
+        cur_Y's 3Q report: cur_Y / 10.01 ~ 10.31
+        """
         error = False
-        recalculate_acc_year = False
+        check_acc_year = False
         ref_Q = None
+        text_warining = None
+
         if date_keyword is None:
             ref_year = self.today.year
         else:
@@ -178,26 +194,27 @@ class DialogManager(object):
                 desc = dict(self.words_dict['TIME']).get(k)
                 if desc == 'PAST':
                     ref_year = self.today.year - 1
-                    recalculate_acc_year = True
+                    check_acc_year = True
                 elif desc == 'FUTURE':
                     ref_year = self.today.year + 1
                 else:
+                    # usually current
                     ref_year = self.today.year
-                    recalculate_acc_year = True
-                ref_Q = None
+                    check_acc_year = True
+                ref_Q = 4
             elif 'quarter' in date_keyword:
                 k = date_keyword.split(' ', 1)[0]
                 if k in ['tax', 'fiscal', 'financial', 'calendar']:
                     # raise error usually don't say these words
                     error = True
-                    # return error, 'Need more specific time information'
+                    return None, None, error, 'Need more specific time information'
                 desc = dict(self.words_dict['TIME']).get(k)
                 cur_Q = self._get_current_quarter()
                 if desc == 'PAST':
-                    recalculate_acc_year = True
                     if cur_Q == 1:
                         ref_year = self.today.year - 1
                         ref_Q = 4
+                        check_acc_year = True
                     else:
                         ref_year = self.today.year
                         ref_Q = cur_Q - 1
@@ -213,28 +230,49 @@ class DialogManager(object):
                     for kq, ws in enumerate([['first', '1st'], ['second', '2nd'], ['third', '3rd'], ['fourth', '4th', 'final']], 1):
                         if k in ws:
                             break
-                    # user's talking quarter = kq
                     ref_Q = kq
                     ref_year = self.today.year
-                    recalculate_acc_year = True
+                    
             else:
                 error = True
+                return None, None, error, 'No time words is detected'
 
-        if recalculate_acc_year:        
-            if self.today >= dt.strptime(f'{self.today.year}.04.01', '%Y.%m.%d'):
-                # still no report
-                # true : acc_year = 2020  2021.12.08 >= 2021.04.01 
-                # false: acc_year = 2019  2021.01.08 >= 2021.04.01 
-                account_year = ref_year
+        # report_date_dict = {1: ('04.01', '04.30'), 2: ('07.01', '07.31'), 3: ('10.01', '10.31'), 4: ('03.01', '03.31')}
+        # if check_acc_quarter:
+            # s, e = report_date_dict[ref_Q]
+            # s_time = dt.strptime(f'{self.today.year}.{s} 00:00:01', '%Y.%m.%d %H:%M:%S')
+            # e_time = dt.strptime(f'{self.today.year}.{e} 23:59:59', '%Y.%m.%d %H:%M:%S')        
+            # if e_time <= self.today:
+                # report is out: today=2022.10.01(4Q) -> ask 1Q, ok
+            #     account_quarter = ref_Q
+            # else:
+                # report is not out: today=2022.10.1(4Q) -> 
+                # today=2022.09
+                # account_quarter = ref_Q - 1
+                # ref_year -= 1
+                # check_acc_year = True
+
+        if check_acc_year:
+            s_time = dt.strptime(f'{self.today.year}.03.01 00:00:01', '%Y.%m.%d %H:%M:%S')
+            e_time = dt.strptime(f'{self.today.year}.03.31 23:59:59', '%Y.%m.%d %H:%M:%S')
+            if s_time <= self.today <= e_time:
+                # report is out: today=2022.04 -> 2021's report
+                account_year = ref_year  # = 4
+                account_quarter = ref_Q
             else:
+                # report is not out: today=2022.01 -> 2020's report
                 account_year = ref_year - 1 
+                account_quarter = ref_Q  # = 4
+                text_warining = f"""Only {account_year}'s data is available due to the {ref_year}'s report will be publish between {self.today.year}.04.01 ~ {self.today.year}.04.30."""
+        
         else:
             account_year = ref_year
-        account_quarter = ref_Q
+            account_quarter = ref_Q
+        
 
         if error:
-            return error, 'No time error'
-        return account_year, account_quarter
+            return None, None, error, 'No time words is detected'
+        return account_year, account_quarter, error, text_warining
 
     def _get_current_quarter(self):
         for q, (s, e) in self.quarter_dict.items():

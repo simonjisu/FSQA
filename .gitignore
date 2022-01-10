@@ -136,6 +136,5 @@ Notebooks/test.ipynb
 logs/
 checkpoints/
 setting_files/x*.yml
-data/all_data*
-data/best_model.ckpt
-src/data/*
+data/*
+src/data/best_model.ckpt
