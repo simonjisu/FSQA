@@ -11,6 +11,8 @@ def write(data_path, modules):
     st.write('# DEMO: FSQA')
     st.write("""
     This is a demo for 'A Framework for Enhancing Boardroom TODS with Financial Ontology and Embedded Machine Learning'
+
+    GitHub: https://github.com/simonjisu/FSQA
     """)
     
     st.write('# Financial Statements Knowledge Graph')
