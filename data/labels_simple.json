@@ -1,1 +1,0 @@
-{"intent": {"None": 0, "IF.fact": 1, "IF.forecast": 2, "PAST.value": 3}, "tags": {"[UNK]": 100, "[SEP]": 102, "[PAD]": 0, "[CLS]": 101, "[MASK]": 103, "O": 5, "B-APPLY": 6, "I-APPLY": 7, "B-BS": 8, "I-BS": 9, "B-IS": 10, "I-IS": 11, "B-PERCENT": 12, "I-PERCENT": 13, "B-TIME": 14, "I-TIME": 15}}

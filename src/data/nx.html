@@ -50,8 +50,8 @@
         
 
         // parsing and collecting nodes and edges from the python
-        nodes = new vis.DataSet([{"font": {"color": "black"}, "group": 5, "id": "Revenue", "label": "Revenue", "shape": "dot", "size": 10, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 98, "id": "InventoriesTurnoverPeriod", "label": "Inventories Turnover Period", "shape": "dot", "size": 12, "title": "Statement: BS Type: Ratio"}, {"font": {"color": "black"}, "group": 4, "id": "Inventories", "label": "Inventories", "shape": "dot", "size": 12, "title": "Statement: BS Type: Value"}]);
-        edges = new vis.DataSet([{"arrows": "to", "from": "Revenue", "title": "denominator", "to": "InventoriesTurnoverPeriod", "weight": 2}, {"arrows": "to", "from": "Inventories", "title": "numerator", "to": "InventoriesTurnoverPeriod", "weight": 2}]);
+        nodes = new vis.DataSet([{"font": {"color": "black"}, "group": 5, "id": "Revenue", "label": "Revenue", "shape": "dot", "size": 10, "title": "Statement: IS Type: Value"}, {"font": {"color": "black"}, "group": 98, "id": "CostOfSalesRatio", "label": "Cost of Sales Ratio", "shape": "dot", "size": 12, "title": "Statement: IS Type: Ratio"}, {"font": {"color": "black"}, "group": 5, "id": "CostOfSales", "label": "Cost of Sales", "shape": "dot", "size": 10, "title": "Statement: IS Type: Value"}]);
+        edges = new vis.DataSet([{"arrows": "to", "from": "Revenue", "title": "denominator", "to": "CostOfSalesRatio", "weight": 2}, {"arrows": "to", "from": "CostOfSales", "title": "numerator", "to": "CostOfSalesRatio", "weight": 2}]);
 
         // adding nodes and edges to the graph
         data = {nodes: nodes, edges: edges};

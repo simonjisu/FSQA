@@ -8,6 +8,8 @@ from db import DBHandler
 import yaml
 import pages.demo
 import pages.graph
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 PAGES = {
     'Demo': pages.demo,

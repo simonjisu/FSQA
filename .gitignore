@@ -130,8 +130,7 @@ dmypy.json
 
 setting_files/settings.yml
 docs_cache
-Notebooks/docs_cache
-Notebooks/test.ipynb
+Notebooks/*
 .DS_Store
 logs/
 checkpoints/
