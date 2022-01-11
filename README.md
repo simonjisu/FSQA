@@ -2,7 +2,7 @@
 
 A demonstration about how does the framework might working in a broad perspective.
 
-[![Video Label](http://img.youtube.com/vi/cVDf8rzfAaI/0.jpg)](https://youtu.be/cVDf8rzfAaI?t=0s)
+![demo](./figs/demo.gif)
 
 ## prerequisite
 
